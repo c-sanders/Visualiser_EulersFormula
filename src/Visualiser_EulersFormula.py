@@ -15,6 +15,7 @@ from PyQt6.QtSvgWidgets import QGraphicsSvgItem
 from ZoomableGraphicsView import ZoomableGraphicsView
 
 
+file_path           = ""
 useCustomStylesheet = False
 
 
@@ -36,7 +37,7 @@ class MainWindow(QMainWindow):
     #   |    |    |- self.setupEventHandlers_buttons
     #   |    |- self.setupWindow_plot
     #   |    |    |- self.setupWindow_plot_title
-    #   |    |    |- self.setupPlotWindow_view
+    #   |    |    |- self.setupWindow_plot_view
     #   |
     #   |- self.configureMainWindow
     #
@@ -52,8 +53,12 @@ class MainWindow(QMainWindow):
     #                  |- self.updateImageViewer
 
 
-
     def __init__(self, ctorNumber):
+
+        nameMethod = "MainWindow::Ctor"
+
+
+        print(nameMethod + " : Enter")
 
         super().__init__()
 
@@ -79,8 +84,13 @@ class MainWindow(QMainWindow):
 
         self.configureMainWindow()
 
+        print(nameMethod + " : Exit")
+
 
     def setSettings(self) :
+
+        global file_path
+
 
         self.titleWindow = "Visualizer for Euler's formula"
 
@@ -100,7 +110,21 @@ class MainWindow(QMainWindow):
 
         self.delayBetweenFrames = 0.05
         self.filename_titlePlot = "./Plot_label.png"
-        self.filename_plot      = "./svg/Eulers_formula_(45,0).svg"
+
+        if not file_path :
+
+            self.filename_plot = "./svg/Eulers_formula_(45,0).svg"
+
+        else :
+
+            self.filename_plot = file_path.as_posix()
+
+
+    def setFilenamePlot(self, filenamePlot) :
+
+
+
+        self.filename_plot = filenamePlot
 
 
     def createAndConfigureGuiComponents(self) :
@@ -881,7 +905,7 @@ class MainWindow(QMainWindow):
     def setupWindow_plot(self) :
 
         self.setupWindow_plot_title()
-        self.setupPlotWindow_view()
+        self.setupWindow_plot_view()
 
         frameTitleAndScene  = QFrame()
         layoutTitleAndScene = QVBoxLayout()
@@ -908,11 +932,18 @@ class MainWindow(QMainWindow):
         self.labelTitleImage.setScaledContents(True)
 
 
-    def setupPlotWindow_view(self) :
+    def setupWindow_plot_view(self) :
 
-        print("Filename = ", self.filename_plot)
+        nameMethod = "MainWindow::setupWindow_plot_view"
+
+
+        print(nameMethod + " : Filename = ", self.filename_plot)
+
+        # Load the image into the view pane.
 
         self.image.load((self.filename_plot))
+
+        # Get the metadat from the image file.
 
         # Get the current
 
@@ -1002,30 +1033,41 @@ class MainWindow(QMainWindow):
             # app.exec_()
 
 
+def processCommandLineArgs() :
+
+    global file_path
+
+    nameMethod            = "processCommandLineArgs"
+    count_commandLineArgs = len(sys.argv)
+
+
+    # Check if any command line args have been passed to this program.
+
+    print(nameMethod + " : Number of command line args  = ", count_commandLineArgs)
+
+    if count_commandLineArgs == 2:
+
+        # Assume that the command line arg which was passed in at position 1, is the name of a file to load.
+
+        print(nameMethod + " : Name of file to load = ", sys.argv[1])
+
+        file_path = Path(sys.argv[1])
+
+        print(nameMethod + " : file_path = ", file_path)
+
+        if not file_path.is_file():
+
+            raise Exception("Specified file doesn't seem to exist.")
+
+
 if __name__ == "__main__" :
 
-    count_commandLineArgs = len(sys.argv)
+    nameFunction = "main"
 
 
     try :
 
-        # Check if any command line args have been passed to this program.
-
-        print("Number of command line args  = ", count_commandLineArgs)
-
-        if count_commandLineArgs == 2 :
-
-            # Assume that the command line arg which was passed in at position 1, is the name of a file to load.
-
-            print("Name of file to load = ", sys.argv[1])
-
-            file_path = Path(sys.argv[1])
-
-            if not file_path.is_file() :
-
-                raise Exception("Specified file doesn't seem to exist.")
-
-            # Continue on as specified file appears to exist.
+        processCommandLineArgs()
 
         app = QApplication(sys.argv)
 
@@ -1043,7 +1085,10 @@ if __name__ == "__main__" :
 
                 print("Stylesheet file 'StylesheetCraig.qss' not found.")
 
+        print(nameFunction, " : file_path = ", file_path)
+
         window = MainWindow(0)
+        window.setFilenamePlot(file_path)
         window.show()
 
         # Create a new thread to run the animation loop in.

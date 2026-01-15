@@ -3,14 +3,19 @@ import threading
 import time
 import re
 
-from PyQt6.QtWidgets    import QApplication, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsEllipseItem, \
-                               QMainWindow, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QMenu
+from pathlib import Path
+
 from PyQt6.QtCore       import Qt
+from PyQt6.QtWidgets    import QApplication, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsEllipseItem, \
+                               QMainWindow, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QSpinBox,         \
+                               QGroupBox, QRadioButton, QButtonGroup
 from PyQt6.QtGui        import QBrush, QPen, QColor, QPixmap, QAction
-# from PyQt6.QtWidgets    import QAction
 from PyQt6.QtSvgWidgets import QGraphicsSvgItem
 
 from ZoomableGraphicsView import ZoomableGraphicsView
+
+
+useCustomStylesheet = False
 
 
 class MainWindow(QMainWindow):
@@ -22,12 +27,15 @@ class MainWindow(QMainWindow):
     #   |    |- self.createAndConfigureGuiComponents_sidePanel
     #   |    |- self.createAndConfigureGuiComponents_viewPanel
     #   |
-    #   |- self.setupMainWindow
+    #   |- self.setupWindow_main
     #   |    |- self.setupMenubar
-    #   |    |- self.setupSidePanel
+    #   |    |- self.setupPanel_side
+    #   |    |    |- self.setupPanel_plotParameters()
+    #   |    |    |- self.setupPanel_viewingAngle()
+    #   |    |    |- self.setupPanel_playbackControls()
     #   |    |    |- self.setupEventHandlers_buttons
-    #   |    |- self.setupPlotWindow
-    #   |    |    |- self.setupPlotWindow_title
+    #   |    |- self.setupWindow_plot
+    #   |    |    |- self.setupWindow_plot_title
     #   |    |    |- self.setupPlotWindow_view
     #   |
     #   |- self.configureMainWindow
@@ -63,7 +71,7 @@ class MainWindow(QMainWindow):
 
         # Setup the GUI main window.
 
-        self.setupMainWindow()
+        self.setupWindow_main()
 
         # Clear threading events.
 
@@ -74,12 +82,21 @@ class MainWindow(QMainWindow):
 
     def setSettings(self) :
 
+        self.titleWindow = "Visualizer for Euler's formula"
+
+        self.title_plotParameters         = "Plot parameters :"
+        self.title_viewingAngle           = "Viewing angle :"
+        self.title_viewingAngle_elevation = "Elevation"
+        self.title_viewingAngle_azimuth   = "Azimuth"
+
+        self.title_playbackControl        = "Playback controls :"
+
         self.playAnimationInSeparateThread    = True
         self.grabScreenshots                  = False
         self.useLayoutSimuLab                 = False
         self.playForward                      = True
 
-        # Delay between frames in seconds, i.e. 50 ms
+        # Delay between frames in seconds, i.e. 50ms
 
         self.delayBetweenFrames = 0.05
         self.filename_titlePlot = "./Plot_label.png"
@@ -89,16 +106,24 @@ class MainWindow(QMainWindow):
     def createAndConfigureGuiComponents(self) :
 
         self.createAndConfigureGuiComponents_menubar()
-        self.createAndConfigureGuiComponents_sidePanel()
-        self.createAndConfigureGuiComponents_viewPanel()
+
+        self.createAndConfigureGuiComponents_dataVisualizationPanel()
 
 
     def createAndConfigureGuiComponents_menubar(self) :
+
+        # Remember that the menuBar is provided by QMainWindow object.
 
         self.menubar = self.menuBar()
 
         self.exitAction = QAction('&Exit', self)
         self.newAction = QAction("&New", self)
+
+
+    def createAndConfigureGuiComponents_dataVisualizationPanel(self) :
+
+        self.createAndConfigureGuiComponents_sidePanel()
+        self.createAndConfigureGuiComponents_viewPanel()
 
 
     def createAndConfigureGuiComponents_sidePanel(self) :
@@ -110,13 +135,26 @@ class MainWindow(QMainWindow):
 
         # View angle components
 
-        self.viewAngleElevLabel = QLabel("View angle (elevation)")
+        self.label_playback = QLabel("Playback")
+
+        self.viewAngleElevLabel = QLabel(self.title_viewingAngle_elevation)
         self.elevationLabel     = QLabel("45\u00B0")
-        self.viewAngleAzimLabel = QLabel("View angle (azimuth)")
+        self.viewAngleAzimLabel = QLabel(self.title_viewingAngle_azimuth)
         self.azimuthLabel       = QLabel("0\u00B0")
 
         self.base               = QLabel("Base")
         self.baseLabel          = QLabel("2.718")
+
+        self.delayFrameLabel    = QLabel("Frame delay (in ms)")
+        self.delayFrame         = QSpinBox()
+        self.delayFrame.setRange(10, 10000)  # Min = 10ms | Max = 10,000ms = 10s
+        self.delayFrame.setSingleStep(10)
+        self.delayFrame.setValue(50)
+
+        self.delayFrameLabel.setObjectName("labelNoBorder")
+        self.delayFrame.setObjectName("spinBox")
+
+        self.label_playback.setObjectName("labelNoBorder")
 
         self.viewAngleElevLabel.setObjectName("labelNoBorder")
         self.viewAngleAzimLabel.setObjectName("labelNoBorder")
@@ -326,7 +364,9 @@ class MainWindow(QMainWindow):
 
             # Wait a certain amount of time, then display the next image.
 
-            time.sleep(self.delayBetweenFrames)
+            print(nameMethod, " : Sleep delay in ms = ", self.delayFrame.value() * 0.001)
+
+            time.sleep(self.delayFrame.value() * 0.001)
             self.updateImageViewer(45, self.counter)
 
             # Check to see if we should we save an image of the main window at this point.
@@ -446,7 +486,7 @@ class MainWindow(QMainWindow):
 
         self.resize(500, 500)
         # self.setGeometry(100, 100, 300, 200)  # x, y, width, height
-        self.setWindowTitle("My PyQt example")
+        self.setWindowTitle(self.titleWindow)
 
 
     """ Setup the layout for the main window. 
@@ -464,7 +504,7 @@ class MainWindow(QMainWindow):
         main window. 
     """
 
-    def setupMainWindow(self) :
+    def setupWindow_main(self) :
 
         # Set the central widget for the main window and set the layout for the
         # central widget.
@@ -475,8 +515,8 @@ class MainWindow(QMainWindow):
         # Setup the top-level components of the main window.
 
         self.setupMenubar()
-        self.setupSidePanel()
-        self.setupPlotWindow()
+
+        self.setupDataVisualizationWindow()
 
 
     def setupMenubar(self) :
@@ -494,6 +534,14 @@ class MainWindow(QMainWindow):
 
         self.fileMenu.addAction(self.newAction)
         self.fileMenu.addAction(self.exitAction)
+
+
+    # Invoked by : setupMainWindow
+
+    def setupDataVisualizationWindow(self):
+
+        self.setupPanel_side()
+        self.setupWindow_plot()
 
 
     def shutdownRoutine(self) :
@@ -526,7 +574,7 @@ class MainWindow(QMainWindow):
         print(nameMethod, " : Exit")
 
 
-    """ Setup the workspace of the GUI's main window. 
+    """ Setup the side panel.
 
         :param NA
 
@@ -534,96 +582,120 @@ class MainWindow(QMainWindow):
 
         :rtype: NA
 
-        Invoked by : The class constructor. 
-
-        Perform the following tasks;
-         
-          - set the central widget for the main window
-          - set the layout of the central widget
-          - setup the side panel
-          - setup the plot window
-    """
-
-    def setupWorkspace(self) :
-
-        # Create a central widget for the main window.
-
-        self.centralWidget = QFrame()
-        self.centralWidgetLayout = QHBoxLayout()
-        self.centralWidget.setLayout(self.centralWidgetLayout)
-
-        self.setCentralWidget(self.centralWidget)
-
-        self.setupSidePanel()
-        self.setupPlotWindow()
-
-
-    """ Create the button panel.
-
-        :param NA
-
-        :returns: NA
-
-        :rtype: NA
-
-        Invoked by : setupWorkspace
+        Invoked by : setupDataVisualizationWindow
         
         Create the vertically oriented side panel then add a number of buttons and labels to
         it. Once this has been done, configure the buttons and labels.
     """
 
-    def setupSidePanel(self):
+    def setupPanel_side(self) :
 
-        layoutButtons = QVBoxLayout()
+        self.layout_sidePanel = QVBoxLayout()
 
-        # Controls that relate to;
-        #
-        #   - Base
-        #   - View angle
 
-        layoutButtons.addWidget(self.base)
-        layoutButtons.addWidget(self.baseLabel)
+        # Add the necessary group boxes to the side panel.
 
-        layoutButtons.addStretch(1)
+        self.setupPanel_plotParameters()
+        self.setupPanel_viewingAngle()
+        self.setupPanel_playbackControls()
 
-        # Controls that relate to;
-        #
-        #   - View angle
+        # Add the Play and Exit buttons to the side panel.
 
-        layoutButtons.addWidget(self.viewAngleElevLabel)
-        layoutButtons.addWidget(self.elevationLabel)
-        layoutButtons.addWidget(self.viewAngleAzimLabel)
-        layoutButtons.addWidget(self.azimuthLabel)
-
-        layoutButtons.addStretch(4)
-
-        # Controls that relate to;
-        #
-        #   - Playback direction and control
-
-        layoutButtons.addWidget(self.labelPlayDirection)
-        layoutButtons.addWidget(self.labelCurrentPlayDirection)
-        layoutButtons.addWidget(self.pushButton_backward, alignment=Qt.AlignmentFlag.AlignHCenter)
-        layoutButtons.addWidget(self.pushButton_forward, alignment=Qt.AlignmentFlag.AlignHCenter)
-        layoutButtons.addWidget(self.pushButton_playStop, alignment=Qt.AlignmentFlag.AlignHCenter)
-
-        layoutButtons.addStretch(4)
-        # layoutButtons.addWidget(self.pushButton_shutdown)
-
-        # Controls that relate to;
-        #
-        #   - Exiting the program
-
-        layoutButtons.addWidget(self.pushButton_exit)
+        self.layout_sidePanel.addStretch(1)
+        self.layout_sidePanel.addWidget(self.pushButton_playStop, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.layout_sidePanel.addStretch(1)
+        self.layout_sidePanel.addWidget(self.pushButton_exit,     alignment=Qt.AlignmentFlag.AlignHCenter)
 
         # pushButton_forward.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # pushButton_backward.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.centralWidgetLayout.addLayout(layoutButtons)
+        self.centralWidgetLayout.addLayout(self.layout_sidePanel)
 
         # Setup button event handlers.
 
         self.setupEventHandlers_buttons()
+
+
+    # Controls that relate to;
+    #
+    #   - plot parameters
+
+    def setupPanel_plotParameters(self) :
+
+        groupBox_plotParameters = QGroupBox(self.title_plotParameters)
+        layout_plotParameters = QVBoxLayout()
+
+
+        groupBox_plotParameters.setObjectName("groupBox_blackText")
+        groupBox_plotParameters.setLayout(layout_plotParameters)
+
+        layout_plotParameters.addWidget(self.base)
+        layout_plotParameters.addWidget(self.baseLabel)
+
+        self.layout_sidePanel.addWidget(groupBox_plotParameters)
+
+
+    def setupPanel_viewingAngle(self):
+
+        # Controls that relate to;
+        #
+        #   - view angle
+
+        groupBox_viewingAngle = QGroupBox(self.title_viewingAngle)
+        layout_viewingAngle = QVBoxLayout()
+
+
+        groupBox_viewingAngle.setObjectName("groupBox_blackText")
+        groupBox_viewingAngle.setLayout(layout_viewingAngle)
+
+        layout_viewingAngle.addWidget(self.viewAngleElevLabel)
+        layout_viewingAngle.addWidget(self.elevationLabel)
+        layout_viewingAngle.addWidget(self.viewAngleAzimLabel)
+        layout_viewingAngle.addWidget(self.azimuthLabel)
+
+        self.layout_sidePanel.addWidget(groupBox_viewingAngle)
+
+
+    # Controls that relate to;
+    #
+    #   - playback direction and control
+
+    def setupPanel_playbackControls(self) :
+
+        groupBox_playbackControl = QGroupBox(self.title_playbackControl)
+        layout_playbackControl   = QVBoxLayout()
+
+
+        groupBox_playbackControl.setObjectName("groupBox_blackText")
+        groupBox_playbackControl.setLayout(layout_playbackControl)
+
+        # layout_playbackControl.addWidget(self.labelPlayDirection)
+        # layout_playbackControl.addWidget(self.labelCurrentPlayDirection)
+
+        radioButton_playForward  = QRadioButton("Forward")
+        radioButton_playBackward = QRadioButton("Backward")
+
+        radioButton_playForward.setChecked(True)
+        radioButton_playBackward.setChecked(False)
+
+        radioButtonGroup = QButtonGroup()
+
+        layout_playbackControl.addWidget(radioButton_playForward,  alignment=Qt.AlignmentFlag.AlignLeft)
+        layout_playbackControl.addWidget(radioButton_playBackward, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)  # Set the frame shape to a horizontal line
+        line.setFrameShadow(QFrame.Shadow.Sunken)  # Set the shadow effect
+
+        layout_playbackControl.addWidget(line)
+
+        # layout_playbackControl.addWidget(self.pushButton_backward, alignment=Qt.AlignmentFlag.AlignHCenter)
+        # layout_playbackControl.addWidget(self.pushButton_forward, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        layout_playbackControl.addWidget(self.delayFrameLabel)
+        layout_playbackControl.addWidget(self.delayFrame)
+
+        self.layout_sidePanel.addWidget(groupBox_playbackControl)
 
 
     def setupEventHandlers_buttons(self) :
@@ -806,9 +878,9 @@ class MainWindow(QMainWindow):
             scene.addItem(ellipse)
 
 
-    def setupPlotWindow(self) :
+    def setupWindow_plot(self) :
 
-        self.setupPlotWindow_title()
+        self.setupWindow_plot_title()
         self.setupPlotWindow_view()
 
         frameTitleAndScene  = QFrame()
@@ -823,7 +895,7 @@ class MainWindow(QMainWindow):
         self.centralWidgetLayout.addWidget(frameTitleAndScene)
 
 
-    def setupPlotWindow_title(self) :
+    def setupWindow_plot_title(self) :
 
         # self.labelTitleImage.setObjectName("./labelNoBorderWhiteBackground")
         self.labelTitleImage.setObjectName("./labelNoBorder")
@@ -932,29 +1004,56 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__" :
 
-    # app = QApplication([])
+    count_commandLineArgs = len(sys.argv)
 
-    app = QApplication(sys.argv)
 
-    # Try and load the external stylesheet.
+    try :
 
-    try:
+        # Check if any command line args have been passed to this program.
 
-        with open("StylesheetCraig.qss", "r") as file:
+        print("Number of command line args  = ", count_commandLineArgs)
 
-            app.setStyleSheet(file.read())
+        if count_commandLineArgs == 2 :
 
-    except FileNotFoundError :
+            # Assume that the command line arg which was passed in at position 1, is the name of a file to load.
 
-        print("Stylesheet file 'StylesheetCraig.qss' not found.")
+            print("Name of file to load = ", sys.argv[1])
 
-    window = MainWindow(0)
-    window.show()
+            file_path = Path(sys.argv[1])
 
-    # Create a new thread to run the animation loop in.
+            if not file_path.is_file() :
 
-    window.startAnimationLoopInOwnThread()
+                raise Exception("Specified file doesn't seem to exist.")
 
-    # Start the GUI running.
+            # Continue on as specified file appears to exist.
 
-    sys.exit(app.exec())
+        app = QApplication(sys.argv)
+
+        # Check if this program should be using a custom stylesheet.
+
+        if useCustomStylesheet :
+
+            try:
+
+                with open("StylesheetCraig.qss", "r") as file:
+
+                    app.setStyleSheet(file.read())
+
+            except FileNotFoundError :
+
+                print("Stylesheet file 'StylesheetCraig.qss' not found.")
+
+        window = MainWindow(0)
+        window.show()
+
+        # Create a new thread to run the animation loop in.
+
+        window.startAnimationLoopInOwnThread()
+
+        # Start the GUI running.
+
+        sys.exit(app.exec())
+
+    except Exception as e :
+
+        print("Exception caught : ", str(e))

@@ -20,9 +20,9 @@ from   PyQt6.QtWidgets import QApplication, QMessageBox
 #   - __init__
 #   - __processToken
 #   - __process_li_element
-#   - __process_base_element
-#   - __process_azimuth_element
-#   - __process_elevation_element
+#   - __process_element_base
+#   - __process_element_azimuth
+#   - __process_element_elevation
 #
 #
 # How to use this class.
@@ -58,33 +58,40 @@ class SvgMetadataReader() :
         self.file_handle = QFile(filename)
 
 
+    # - Set the name of the SVG file and then open it.
+    # - Create an XML SAX parser and open it on the SVG file.
+    # - Process all tokens in the SVG file.
+    # - Close the SVG file now that we have finished with it.
+
     def get_parameters_from_file(self, filename) :
 
-        nameMethod = "SvgMetadataReader::read_parameters_from_file"
+        """
 
-        base      = None
-        azimuth   = None
-        elevation = None
+        :param filename:
+        :return: A dictionary of parameter-value pairs for the base, azimuth, and elevation.
+        """
+
+        nameMethod = "SvgMetadataReader::read_parameters_from_file"
 
 
         print(nameMethod + " : Enter")
 
         try :
 
-            # Set the name of the SVG file then open it.
+            # Set the name of the SVG file and then open it.
 
             self.set_filename(filename)
-            self.open_file()
+            self.__open_file()
 
             # Create an XML SAX parser and open it on the SVG file.
 
-            self.create_and_open_sax_reader()
+            self.__create_and_open_sax_reader()
 
-            # Process the SVG file.
+            # Process all tokens in the SVG file.
 
-            self.process_all_tokens()
+            self.__process_all_tokens()
 
-            # Close the file now that we have finished with it.
+            # Close the SVG file now that we have finished with it.
 
             self.file_handle.close()
 
@@ -92,13 +99,15 @@ class SvgMetadataReader() :
 
             print("Caught an exception : " + str(e))
 
+
         print(nameMethod + " : Exit")
 
+        return {"base"      : self.base,
+                "azimuth"   : self.azimuth,
+                "elevation" : self.elevation}
 
-        return [base, azimuth, elevation]
 
-
-    def open_file(self) :
+    def __open_file(self) :
 
         nameMethod = "SvgMetadataReader::open_file"
 
@@ -116,7 +125,7 @@ class SvgMetadataReader() :
         print(nameMethod + " : Exit")
 
 
-    def create_and_open_sax_reader(self) :
+    def __create_and_open_sax_reader(self) :
 
         """ Create an XML SAX parser and open it on the SVG file.
 
@@ -133,7 +142,7 @@ class SvgMetadataReader() :
         print(nameMethod + " : Exit")
 
 
-    def process_all_tokens(self) :
+    def __process_all_tokens(self) :
 
         """Process all of the XML tokens in the SVG file.
 
@@ -142,7 +151,7 @@ class SvgMetadataReader() :
         :rtype: NA
         """
 
-        nameMethod = "SvgMetadataReader::process_all_tokens"
+        nameMethod = "SvgMetadataReader::__process_all_tokens"
 
 
         print(nameMethod + " : Enter")
@@ -150,7 +159,7 @@ class SvgMetadataReader() :
         while (not self.reader.atEnd()) and \
               (not self.reader.hasError()) :
 
-            self.read_and_process_next_token()
+            self.__read_and_process_next_token()
 
         # Check if an error has occurred while running the loop.
 
@@ -163,43 +172,9 @@ class SvgMetadataReader() :
         print(nameMethod + " : Exit")
 
 
-    # - Open the SVG file.
-    # - Create a new SAX reader to open a stream on the SVG file.
-    # - While still possible.
-    #     - Read the next token from the stream.
-    #     - Process the token which was just read from the stream.
-    # - If an error occurred while processing the tokens, then close the stream
+    def __read_and_process_next_token(self) :
 
-    # TODO : Probably delete this method.
-
-    def process_file(self) :
-
-        try :
-
-            # Open the SVG file.
-
-            self.open_file()
-
-            # Create a new SAX reader to open a stream on the XML file.
-
-            self.open_sax_reader()
-
-            #
-
-            self.process_all_tokens()
-
-            # Close the file now that we have finished with it.
-
-            self.file_handle.close()
-
-        except Exception as e :
-
-            print("Caught an exception : " + str(e))
-
-
-    def read_and_process_next_token(self) :
-
-        nameMethod = "SvgMetadataReader::process_all_tokens"
+        nameMethod = "SvgMetadataReader::__read_and_process_next_token"
 
 
         print(nameMethod + " : Enter")
@@ -208,6 +183,8 @@ class SvgMetadataReader() :
 
         self.token = self.reader.readNext()
         self.__processToken()
+
+        print(nameMethod + " : Exit")
 
 
     def __processToken(self) :
@@ -242,7 +219,7 @@ class SvgMetadataReader() :
             if (self.local_name is not None) and \
                (self.local_name == "li"):
 
-                self.process_li_element()
+                self.__process_li_element()
 
         elif self.token == QXmlStreamReader.TokenType.EndElement:
 
@@ -265,26 +242,63 @@ class SvgMetadataReader() :
 
         print("    Element value = " + value_element)
 
-        if self.process_base_element() :
+        if self.__process_element_base(value_element) :
 
             return
 
-        if self.process_azimuth_element() :
+        if self.__process_element_azimuth(value_element) :
 
             return
 
-        if self.process_elevation_element() :
+        if self.__process_element_elevation(value_element) :
 
             return
 
 
-    def __process_base_element(self) :
+    def __process_element_base(self, value_element) :
+
+        nameMethod  = "SvgMetadataReader::__process_element_base"
+        returnValue = False
+
+
+        print(nameMethod + " : Enter")
+
+        # Check if the value of the element contains the value for : base
+
+        result_search = re.search(r"base", value_element)
+
+        if result_search is not None:
+
+            returnValue = True
+
+            # The value of the element appears to contain the word "base".
+
+            result_search = re.search(r"\d{1,3}", value_element)
+            self.base = result_search.group()
+
+            print(nameMethod + " : Base = " + self.base)
+
+
+        print(nameMethod + " : Exit")
+
+        return returnValue
+
+
+    def __process_element_azimuth(self, value_element):
+
+        nameMethod  = "SvgMetadataReader::__process_element_azimuth"
+        returnValue = False
+
+
+        print(nameMethod + " : Enter")
 
         # Check if the value of the element contains the value for : azimuth
 
         result_search = re.search(r"azimuth", value_element)
 
         if result_search is not None:
+
+            returnValue = True
 
             # The value of the element appears to contain the word "azimuth".
 
@@ -293,20 +307,27 @@ class SvgMetadataReader() :
 
             print("Azimuth = " + self.azimuth)
 
-            return
+
+        print(nameMethod + " : Exit")
+
+        return returnValue
 
 
-    def __process_azimuth_element(self):
+    def __process_element_elevation(self, value_element):
+
+        nameMethod  = "SvgMetadataReader::__process_element_elevation"
+        returnValue = False
+
+
+        print(nameMethod + " : Enter")
 
         # Check if the value of the element contains the value for : elevation
 
         result_search = re.search(r"elevation", value_element)
 
-        if result_search is None:
+        if result_search is not None:
 
-            raise Exception("Element value does not contain the following text : elevation")
-
-        else :
+            returnValue = True
 
             # The value of the element appears to contain the word "elevation".
 
@@ -315,23 +336,10 @@ class SvgMetadataReader() :
 
             print("Elevation = " + self.elevation)
 
-            return
 
+        print(nameMethod + " : Exit")
 
-    def __process_elevation_element(self):
-
-        # Check if the value of the element contains the value for : base
-
-        result_search = re.search(r"base", value_element)
-
-        if result_search is not None:
-
-            # The value of the element appears to contain the word "elevation".
-
-            result_search = re.search(r"\d{1,3}", value_element)
-            self.base = result_search.group()
-
-            print("Base = " + self.base)
+        return returnValue
 
 
     def display_plot_parameters(self) :
@@ -369,14 +377,14 @@ if __name__ == "__main__":
 
     plot_parameters = svgMetadataReader.get_parameters_from_file(sys.argv[1])
 
-    if plot_parameters[0] is not None :
+    if plot_parameters["base"] is not None :
 
-        print("Plot parameter : base      = " + plot_parameters[0])
+        print("Plot parameter : base      = " + plot_parameters["base"])
 
-    if plot_parameters[1] is not None:
+    if plot_parameters["azimuth"] is not None:
 
-        print("Plot parameter : azimuth   = " + plot_parameters[1])
+        print("Plot parameter : azimuth   = " + plot_parameters["azimuth"])
 
-    if plot_parameters[2] is not None:
+    if plot_parameters["elevation"] is not None:
 
-        print("Plot parameter : elevation = " + plot_parameters[2])
+        print("Plot parameter : elevation = " + plot_parameters["elevation"])

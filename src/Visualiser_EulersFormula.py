@@ -5,14 +5,18 @@ import re
 
 from pathlib import Path
 
-from PyQt6.QtCore       import Qt
-from PyQt6.QtWidgets    import QApplication, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsEllipseItem, \
-                               QMainWindow, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QSpinBox,         \
-                               QGroupBox, QRadioButton, QButtonGroup
-from PyQt6.QtGui        import QBrush, QPen, QColor, QPixmap, QAction
-from PyQt6.QtSvgWidgets import QGraphicsSvgItem
+from PyQt6.QtCore         import Qt
+from PyQt6.QtWidgets      import QApplication, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsEllipseItem, \
+                                 QMainWindow, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QSpinBox,         \
+                                 QGroupBox, QRadioButton, QButtonGroup
+from PyQt6.QtGui          import QBrush, QPen, QColor, QPixmap, QAction
+from PyQt6.QtSvgWidgets   import QGraphicsSvgItem
 
 from ZoomableGraphicsView import ZoomableGraphicsView
+
+# from MetadataReader       import MetadataReader
+
+from SvgMetadataReader    import SvgMetadataReader
 
 
 file_path           = ""
@@ -61,6 +65,10 @@ class MainWindow(QMainWindow):
         print(nameMethod + " : Enter")
 
         super().__init__()
+
+        self.svgMetadataReader = SvgMetadataReader()
+
+        # self.svgMetadataReader.set_filename_svg_file()
 
         # Set various settings.
 
@@ -122,12 +130,12 @@ class MainWindow(QMainWindow):
 
     def setFilenamePlot(self, filenamePlot) :
 
-
-
         self.filename_plot = filenamePlot
 
 
     def createAndConfigureGuiComponents(self) :
+
+        self.metadataReader = SvgReader()
 
         self.createAndConfigureGuiComponents_menubar()
 
@@ -967,10 +975,26 @@ class MainWindow(QMainWindow):
 
     def updateImageViewer(self, elevation, counter) :
 
+        parameters = []
+
+
         print("MainWindow::updateImageViewer : Enter")
 
         filename = "./svg/Eulers_formula_(45," + str(counter) + ").svg"
         print("Filename = ", filename)
+
+        # Get the SVG metadata from this file. The invocation of the method
+        # get_parameters_from_file will;
+        #
+        #   - Open the file.
+        #   - Get the SVG metadata from it.
+        #   - Close the file.
+
+        parameters = self.svgMetadataReader.get_parameters_from_file(filename)
+
+        base      = parameters["base"]
+        azimuth   = parameters["azimuth"]
+        elevation = parameters["elevation"]
 
         # It seems you can't just load a new image into the QPixmap. You need to reload the QPixmap into the QLabel
         # before you update it.
@@ -982,8 +1006,9 @@ class MainWindow(QMainWindow):
 
         # Update the elevation and azimuth fields as well.
 
-        self.elevationLabel.setText("45\u00B0")
-        self.azimuthLabel.setText(str(counter) + "\u00B0")
+        self.baseLabel.setText(base)
+        self.elevationLabel.setText(elevation + "\u00B0")
+        self.azimuthLabel.setText(azimuth + "\u00B0")
 
         print("MainWindow::updateImageViewer : Exit")
 

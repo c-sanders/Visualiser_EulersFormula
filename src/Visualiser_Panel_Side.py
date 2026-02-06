@@ -13,7 +13,38 @@ from PySide6.QtWidgets import (QFrame,
 
 class Visualiser_Panel_Side(QFrame) :
 
-    def __init__(self, window_main) :
+    # Call stack trace for method : Constructor
+    # =========================================
+    #
+    # Visualiser_Panel_Side.__init__
+    # │
+    # ├── QFrame.__init__
+    # ├── Visualiser_Panel_Side.__setup_settings
+    # ├── Visualiser_Panel_Side.__create_widgets
+    # │     ├── create_and_configure_widgets_plot_parameters
+    # │     ├── create_and_configure_widgets_viewing_angle
+    # │     ├── create_and_configure_widgets_playback_controls
+    # │     └── create_and_configure_widgets_other
+    # └── Visualiser_Panel_Side.__create_objects
+
+    # Call stack trace for method : initialise
+    # ========================================
+    #
+    # Visualiser_Panel_Side.initialise
+    # ├── Visualiser_Panel_Side.__create_actions
+    # ├── Visualiser_Panel_Side.__create_menus
+    # ├── Visualiser_Panel_Side.__create_toolbars
+    # ├── Visualiser_Panel_Side.__create_and_configure_layouts
+    # │     ├── setup_group_box_parameters
+    # │     ├── setup_group_box_viewing_angle
+    # │     ├── setup_group_box_playback_controls
+    # │     ├── setup_remaining_controls
+    # │     └── setupEventHandlers_buttons
+    # ├── Visualiser_Panel_Side.__create_signal_connections
+    # └── Visualiser_Panel_Side.__configure
+
+
+    def __init__(self) :
 
         nameMethod = self.__class__.__name__ + \
                      "::__init__"
@@ -23,19 +54,49 @@ class Visualiser_Panel_Side(QFrame) :
 
         super().__init__()
 
-        self.setup_settings()
+        self._is_initialised = False
 
-        self.create_and_configure_child_widgets()
-        self.setup_layout()
+        self.__setup_settings()
+        self.__create_widgets()
+        self.__create_objects()
 
         print(nameMethod + " : Exit")
 
 
-    def setup_settings(self) :
+    def initialise(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::initialise"
+
+
+        print(nameMethod + " : Enter")
+
+        if self._is_initialised :
+
+            return
+
+        # Create GUI components.
+
+        print(nameMethod + " : Exit")
+
+        self.__create_actions()
+        self.__create_menus()
+        self.__create_toolbars()
+        self.__create_and_configure_layouts()
+        self.__create_signal_connections()
+
+        # Perform various configuration tasks.
+
+        self.__configure()
+
+        self._is_initialised = True
+
+        print(nameMethod + " : Exit")
+
+
+    def __setup_settings(self) :
 
         self.file_path = None
-
-        self.titleWindow = "Visualiser for Euler's formula"
 
         self.run_animation                           = True
         self.display_button_run                      = True
@@ -97,12 +158,58 @@ class Visualiser_Panel_Side(QFrame) :
         print(nameMethod + " : Exit")
 
 
-    def create_and_configure_child_widgets(self) :
+    def __create_widgets(self) :
 
         self.create_and_configure_widgets_plot_parameters()
         self.create_and_configure_widgets_viewing_angle()
         self.create_and_configure_widgets_playback_controls()
         self.create_and_configure_widgets_other()
+
+
+    def __create_objects(self) :
+
+        pass
+
+
+    def __create_actions(self) :
+
+        pass
+
+
+    def __create_menus(self) :
+
+        pass
+
+
+    def __create_toolbars(self) :
+
+        pass
+
+
+    def __create_and_configure_layouts(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::__create_and_configure_layouts"
+
+
+        print(nameMethod, " : Enter")
+
+        layout = QVBoxLayout(self)
+
+        self.setup_group_box_parameters()
+        self.setup_group_box_viewing_angle()
+        self.setup_group_box_playback_controls()
+
+        self.setup_remaining_controls()
+
+        self.setupEventHandlers_buttons()
+
+        print(nameMethod, " : Exit")
+
+
+    def __create_signal_connections(self) :
+
+        pass
 
 
     def create_and_configure_widgets_plot_parameters(self) :
@@ -225,27 +332,6 @@ class Visualiser_Panel_Side(QFrame) :
 
         self.pushButton_playStop.setToolTip(self.tool_tip_button_play_forward)
         self.pushButton_shutdown.setToolTip("Connects to the method : MainWindow::shutdownAnimationThread")
-
-
-    def setup_layout(self) :
-
-        nameMethod = self.__class__.__name__ + \
-                     "::setup_layout"
-
-
-        print(nameMethod, " : Enter")
-
-        layout = QVBoxLayout(self)
-
-        self.setup_group_box_parameters()
-        self.setup_group_box_viewing_angle()
-        self.setup_group_box_playback_controls()
-
-        self.setup_remaining_controls()
-
-        self.setupEventHandlers_buttons()
-
-        print(nameMethod, " : Exit")
 
 
     def setup_remaining_controls(self) :
@@ -394,3 +480,13 @@ class Visualiser_Panel_Side(QFrame) :
         # self.window_main.close()
 
         print(nameMethod, " : Exit")
+
+
+    def __configure(self) :
+
+        """
+        Perform various configuration tasks that don't really fit in
+        anywhere else.
+        """
+
+        pass

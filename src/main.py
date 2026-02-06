@@ -104,17 +104,21 @@ if __name__ == "__main__" :
 
         print(nameFunction, " : file_path = ", file_path)
 
+        # Create a main window object and then initialise it.
+
         print(nameFunction, " : About to create a Visualiser_MainWindow")
 
-        window    = Visualiser_MainWindow()
+        window = Visualiser_MainWindow()
+        window.initialise()
 
         print(nameFunction, " : Have created a Visualiser_MainWindow")
 
-        window.setWindowTitle("Visualiser")
-
-
+        # Configure the main window object and then instruct it to show itself.
 
         window.show()
+
+        # Instruct the Qt application framework to begin execution.
+
         app.exec()
 
     except Exception as e:

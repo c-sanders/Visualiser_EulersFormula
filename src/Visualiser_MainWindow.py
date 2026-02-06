@@ -7,6 +7,50 @@ from visualiser_panel_plot import Visualiser_Panel_Plot
 
 class Visualiser_MainWindow(QMainWindow) :
 
+    # According to advice from ChatGPT;
+    #
+    #   - Constructor -> Create widgets
+    #   - Initialise  -> Configure, connect, and load data
+    #
+    #
+    # Helper methods could be named as follows;
+    #
+    #   _create_actions()
+    #   _create_menus()
+    #   _create_toolbars()
+    #   _create_widgets()   *
+    #   _create_layouts()
+    #   _connect_signals()
+
+    # Call stack trace for method : Constructor
+    # =========================================
+    #
+    # Visualiser_MainWindow.__init__()
+    #   │
+    #   ├── super().__init__()
+    #   ├── Visualiser_MainWindow.__setup_settings()
+    #   ├── Visualiser_MainWindow.__create_widgets()
+    #   │     ├── Visualiser_Panel_Side()
+    #   │     └── Visualiser_Panel_Plot()
+    #   ├── Visualiser_MainWindow.__create_objects()
+    #   └── SvgMetadataReader()
+
+    # Call stack trace for method : initialise
+    # ========================================
+    #
+    # Visualiser_MainWindow.initialise()
+    #   ├── Visualiser_MainWindow.__create_actions()
+    #   ├── Visualiser_MainWindow.__create_menus()
+    #   ├── Visualiser_MainWindow.__create_toolbars()
+    #   ├── Visualiser_MainWindow.__create_and_configure_layouts()
+    #   │     └── Visualiser_MainWindow.__setup_widget_central()
+    #   ├── Visualiser_MainWindow.__create_signal_connections
+    #   └── Visualiser_MainWindow.__configure
+    #         ├── setWindowTitle
+    #         ├── panel_side.set_window_main
+    #         └── Visualiser_MainWindow.__setup_objects_other
+
+
     def __init__(self) :
 
         nameMethod = self.__class__.__name__ + \
@@ -17,29 +61,54 @@ class Visualiser_MainWindow(QMainWindow) :
 
         super().__init__()
 
-        self.setup_settings()
+        self._is_initialised = False
 
-        self.create_and_configure_child_widgets()
-        self.setup_widget_central()
-        self.setup_widgets_other()
+        self.__setup_settings()
+        self.__create_widgets()
+        self.__create_objects()
 
         print(nameMethod + " : Exit")
 
 
-    def setup_settings(self) :
+    def initialise(self) :
+
+        if self._is_initialised :
+
+            return
+
+        # Create GUI components.
+
+        self.__create_actions()
+        self.__create_menus()
+        self.__create_toolbars()
+        self.__create_and_configure_layouts()
+        self.__create_signal_connections()
+
+        # Perform various configuration tasks.
+
+        self.__configure()
+
+        # Initialise child widgets.
+
+        self.panel_side.initialise()
+
+        self._is_initialised = True
+
+
+    def __setup_settings(self) :
 
         nameMethod = self.__class__.__name__ + \
-                     "::setup_settings"
+                     "::__setup_settings"
 
 
         print(nameMethod + " : Enter")
 
-        self.svg_metadata_reader = SvgMetadataReader()
+        self.titleWindow = "Visualiser"
 
         print(nameMethod + " : Exit")
 
 
-    def create_and_configure_child_widgets(self) :
+    def __create_widgets(self) :
 
         """
         Create the central widget for the object and create the central
@@ -65,21 +134,62 @@ class Visualiser_MainWindow(QMainWindow) :
         print(nameMethod + " : Exit")
 
 
-    def setup_widget_central(self) :
+    def __create_objects(self) :
+
+        self.svg_metadata_reader = SvgMetadataReader()
+
+
+    def __create_actions(self) :
+
+        pass
+
+
+    def __create_menus(self) :
+
+        pass
+
+
+    def __create_toolbars(self) :
+
+        pass
+
+
+    def __create_signal_connections(self) :
+
+        pass
+
+
+    def __configure(self) :
 
         """
-        Set the central widget for the object and set the layout for the
-        central widget.
+        Perform various configuration tasks that don't really fit in
+        anywhere else.
 
-        Create a new QHBoxLayout and set it to be the layout for this object's
-        central widget. Only 2 widgets are added into this layout; the side
-        panel and the plot panel.
+        Set the title of the app in the window frame and inform the
+        side panel of the main window.
+        """
+
+        self.setWindowTitle(self.titleWindow)
+
+        self.panel_side.set_window_main(self)
+
+        self.__setup_objects_other()
+
+
+    def __create_and_configure_layouts(self) :
+
+        """
+        Set the layout for the central widget and then set the central widget
+        to be the central widget of the main window.
+
+        Once this is done, add the child widgets into the central widget's
+        layout.
 
         :return: NA
         """
 
         nameMethod = self.__class__.__name__ + \
-                     "::setup_widget_central"
+                     "::__create_and_configure_layouts"
 
 
         print(nameMethod + " : Enter")
@@ -103,6 +213,6 @@ class Visualiser_MainWindow(QMainWindow) :
         print(nameMethod + " : Exit")
 
 
-    def setup_widgets_other(self) :
+    def __setup_objects_other(self) :
 
-        self.panel_side.set_window_main(self)
+        pass

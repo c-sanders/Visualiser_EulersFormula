@@ -4,7 +4,7 @@ from PySide6.QtWidgets                       import (QMainWindow,
 
 from SvgMetadataReader.SvgMetadataReader     import  SvgMetadataReader
 from VisualiserPanelSide.VisualiserPanelSide import  VisualiserPanelSide
-from visualiser_panel_plot                   import  Visualiser_Panel_Plot
+from VisualiserPanelPlot.VisualiserPanelPlot import  VisualiserPanelPlot
 
 
 class VisualiserMainWindow(QMainWindow) :
@@ -131,7 +131,7 @@ class VisualiserMainWindow(QMainWindow) :
         self.widget_central  = QFrame()
 
         self.panel_side = VisualiserPanelSide()
-        self.panel_plot = Visualiser_Panel_Plot()
+        self.panel_plot = VisualiserPanelPlot()
 
         print(nameMethod + " : Exit")
 

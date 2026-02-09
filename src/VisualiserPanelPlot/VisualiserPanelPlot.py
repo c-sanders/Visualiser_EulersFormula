@@ -6,6 +6,7 @@ from PySide6.QtWidgets          import (QFrame,
 from PySide6.QtGui              import (QPixmap)
 from PySide6.QtWebEngineCore    import  QWebEngineSettings
 from PySide6.QtWebEngineWidgets import  QWebEngineView
+from PySide6.QtSvgWidgets       import  QSvgWidget
 
 from SvgMetadataReader.SvgMetadataReader import SvgMetadataReader
 
@@ -28,15 +29,94 @@ class VisualiserPanelPlot(QFrame) :
 
     def __init__(self) :
 
-        nameMethod = "Visualiser_Panel_Plot::__init__"
+        nameMethod = self.__class__.__name__ + \
+                     "::__init__"
 
 
         print(nameMethod + " : Enter")
 
         super().__init__()
 
-        self.filename_plot                 = "/home/craig/source_code/python/Visualiser_EulersFormula/svg/Eulers_formula_(45,8).svg"
+        self._is_initialised = False
+
+        self.__setup_settings()
+        self.__create_widgets()
+        self.__create_objects()
+
+        print(nameMethod + " : Exit")
+
+
+    def initialise(self) :
+
+        if self._is_initialised :
+
+            return
+
+        # Create GUI components.
+
+        self.__create_actions()
+        self.__create_menus()
+        self.__create_toolbars()
+        self.__create_and_configure_layouts()
+        self.__create_signal_connections()
+
+        # Perform various configuration tasks.
+
+        self.__configure()
+
+        # Initialise child widgets.
+
+        self._is_initialised = True
+
+
+    # Invoked from : __init__
+
+    def __setup_settings(self) :
+
+        self.filename_plot                 = "/home/craig/source_code/python/visualiser_8_Feb_2026/svg/Eulers_formula_(45,8).svg"
         self.plot_title_use_png_or_mathjax = "mathjax"
+
+
+    # Invoked from : __init__
+
+    def __create_widgets(self) :
+
+        self.plot_title           = QWebEngineView()
+        self.label_panel_plotView = QLabel()
+        self.image                = QSvgWidget()
+
+
+    # Invoked from : __init__
+
+    def __create_objects(self) :
+
+        self.svgMetadataReader = SvgMetadataReader()
+
+
+    # Invoked from : initialise
+
+    def __create_actions(self) :
+
+        pass
+
+
+    # Invoked from : initialise
+
+    def __create_menus(self) :
+
+        pass
+
+
+    # Invoked from : initialise
+
+    def __create_toolbars(self) :
+
+        pass
+
+
+    # Invoked from : initialise
+
+    def __create_and_configure_layouts(self) :
 
         # Create and set a layout for this widget.
 
@@ -44,41 +124,42 @@ class VisualiserPanelPlot(QFrame) :
 
         self.setLayout(layout)
 
-        # Create the child widgets for this widget.
-
-        self.create_child_widgets()
-
         layout.addWidget(self.plot_title)
-        layout.addWidget(self.label_panel_plotView)
+        layout.addWidget(self.image)
         # layout.addWidget()
 
-        self.setup_panel_plotTitle()
-        self.setup_panel_plotView()
-
-        print(nameMethod + " : Exit")
+        self.__setup_panel_plotTitle()
+        self.__setup_panel_plotView()
 
 
-    def create_child_widgets(self) :
+    # Invoked from : initialise
 
-        self.plot_title           = QWebEngineView()
-        self.label_panel_plotView = QLabel()
-        self.image                = QPixmap()
+    def __create_signal_connections(self) :
 
-        self.svgMetadataReader    = SvgMetadataReader()
+        # Perform various configuration tasks.
+
+        pass
 
 
-    def setup_panel_plotTitle(self) :
+    # Invoked from : initialise
+
+    def __configure(self) :
+
+        pass
+
+
+    def __setup_panel_plotTitle(self) :
 
         if self.plot_title_use_png_or_mathjax == "mathjax" :
 
-            self.setup_panel_plotTitle_usingMathJax()
+            self.__setup_panel_plotTitle_usingMathJax()
 
         if self.plot_title_use_png_or_mathjax == "png":
 
-            self.setup_panel_plotTitle_usingPngFile()
+            self.__setup_panel_plotTitle_usingPngFile()
 
 
-    def setup_panel_plotTitle_usingMathJax(self):
+    def __setup_panel_plotTitle_usingMathJax(self):
 
         nameMethod = "Visualiser_Panel_Plot::createAndConfigure_guiComponents_panel_plot"
 
@@ -109,7 +190,7 @@ class VisualiserPanelPlot(QFrame) :
             )
 
 
-    def setup_panel_plotView(self) :
+    def __setup_panel_plotView(self) :
 
         nameMethod = "Visualiser_Panel_Plot::setup_panel_plotView"
 
@@ -121,7 +202,7 @@ class VisualiserPanelPlot(QFrame) :
         print(nameMethod + " : Exit")
 
 
-    def setup_panel_plotTitle_usingPngFile(self) :
+    def __setup_panel_plotTitle_usingPngFile(self) :
 
         # TODO : This panel should be enclosed in a QFrame.
 
@@ -152,7 +233,7 @@ class VisualiserPanelPlot(QFrame) :
 
         # Open the image file and then load it into the panel_plotView
 
-        self.image = QPixmap(filename)
+        self.image.load(filename)
 
         # if self.image is None :
 
@@ -172,12 +253,14 @@ class VisualiserPanelPlot(QFrame) :
         print(nameMethod + " : Height of image = " + str(heightLabelImage))
         print(nameMethod + " : Size of image   = " + str(sizeLabelImage))
 
-        imageScaled = self.image.scaled(sizeLabelImage,
-                                        Qt.AspectRatioMode.KeepAspectRatio,
-                                        Qt.TransformationMode.SmoothTransformation)
+        if False :
 
-        self.label_panel_plotView.setPixmap(imageScaled)
-        self.label_panel_plotView.setScaledContents(True)
+            imageScaled = self.image.scaled(sizeLabelImage,
+                                            Qt.AspectRatioMode.KeepAspectRatio,
+                                            Qt.TransformationMode.SmoothTransformation)
+
+            self.label_panel_plotView.setPixmap(imageScaled)
+            self.label_panel_plotView.setScaledContents(True)
 
         # I don't think the following line of code is necessary.
 

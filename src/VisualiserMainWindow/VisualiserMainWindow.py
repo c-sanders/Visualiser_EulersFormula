@@ -93,6 +93,7 @@ class VisualiserMainWindow(QMainWindow) :
         # Initialise child widgets.
 
         self.panel_side.initialise()
+        self.panel_plot.initialise()
 
         self._is_initialised = True
 

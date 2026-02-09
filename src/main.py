@@ -1,10 +1,10 @@
 import os
 import sys
 
-from PySide6.QtWidgets import (QApplication,
-                               QMainWindow)
+from PySide6.QtWidgets                         import (QApplication,
+                                                       QMainWindow)
 
-from Visualiser_MainWindow import Visualiser_MainWindow
+from VisualiserMainWindow.VisualiserMainWindow import VisualiserMainWindow
 
 
 run_animation             = True
@@ -108,7 +108,7 @@ if __name__ == "__main__" :
 
         print(nameFunction, " : About to create a Visualiser_MainWindow")
 
-        window = Visualiser_MainWindow()
+        window = VisualiserMainWindow()
         window.initialise()
 
         print(nameFunction, " : Have created a Visualiser_MainWindow")

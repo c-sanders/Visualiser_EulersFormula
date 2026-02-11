@@ -1,5 +1,6 @@
 from PySide6.QtCore    import (Qt,
-                               QSize)
+                               QSize,
+                               Slot)
 
 from PySide6.QtWidgets import (QFrame,
                                QPushButton,
@@ -490,3 +491,19 @@ class VisualiserPanelSide(QFrame) :
         """
 
         pass
+
+
+    @Slot(str, str, str)
+    def __signal_svg_metadata_updated(self, base, azimuth, elevation):
+
+        nameMethod = self.__class__.__name__ + \
+                     "::__signal_svg_metadata_updated"
+
+
+        print(nameMethod + " : Enter")
+
+        # This function is the slot that runs when the signal is received
+
+        print(nameMethod + " : base = " + base)
+
+        print(nameMethod + " : Exit")

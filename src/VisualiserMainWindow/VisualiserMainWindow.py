@@ -1,10 +1,12 @@
-from PySide6.QtWidgets                       import (QMainWindow,
-                                                     QFrame,
-                                                     QHBoxLayout)
+from PySide6.QtCore                                  import  QThread
+from PySide6.QtWidgets                               import (QMainWindow,
+                                                             QFrame,
+                                                             QHBoxLayout)
 
-from SvgMetadataReader.SvgMetadataReader     import  SvgMetadataReader
-from VisualiserPanelSide.VisualiserPanelSide import  VisualiserPanelSide
-from VisualiserPanelPlot.VisualiserPanelPlot import  VisualiserPanelPlot
+from SvgMetadataReader.SvgMetadataReader             import  SvgMetadataReader
+from VisualiserPanelSide.VisualiserPanelSide         import  VisualiserPanelSide
+from VisualiserPanelPlot.VisualiserPanelPlot         import  VisualiserPanelPlot
+from VisualiserAnimationLoop.VisualiserAnimationLoop import  VisualiserAnimationLoop
 
 
 class VisualiserMainWindow(QMainWindow) :
@@ -77,6 +79,8 @@ class VisualiserMainWindow(QMainWindow) :
         if self._is_initialised :
 
             return
+
+        self.__create_threading_components()
 
         # Create GUI components.
 
@@ -159,7 +163,48 @@ class VisualiserMainWindow(QMainWindow) :
 
     def __create_signal_connections(self) :
 
-        pass
+        nameMethod = self.__class__.__name__ + \
+                     "::__create_signal_connections"
+
+
+        print(nameMethod + " : Enter")
+
+        try :
+
+            # Connect signal to slot
+            # Signal : VisualiserAnimationLoop : signal_svg_metadata_updated
+            # Slot   : VisualiserPanelSide     : __signal_svg_metadata_updated
+
+            self.worker_animation.connect(self.panel_plot.slot_svg_metadata_updated)
+
+        except Exception as e :
+
+            print(nameMethod + " : CAUGHT THE FOLLOWING EXCEPTION")
+            print(nameMethod + " : " + str(e))
+
+
+    def __create_threading_components(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::__create_threading_components"
+
+
+        print(nameMethod + " : Enter")
+
+        self.thread_animation = QThread()
+        self.worker_animation = VisualiserAnimationLoop()
+        self.worker_animation.moveToThread(self.thread_animation)
+
+        self.thread_animation.started.connect(self.worker_animation.run)
+        self.worker_animation.finished.connect(self.thread_animation.quit)
+        self.worker_animation.finished.connect(self.worker_animation.deleteLater)
+        self.thread_animation.finished.connect(self.thread_animation.deleteLater)
+
+        self.thread_animation.start()
+
+        print(nameMethod + " : Have created a worker thread")
+
+        print(nameMethod + " : Exit")
 
 
     def __configure(self) :

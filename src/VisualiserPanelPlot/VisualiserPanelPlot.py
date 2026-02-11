@@ -1,14 +1,109 @@
 from PySide6.QtCore             import (Qt,
+                                        QRectF,
                                         Slot)
-from PySide6.QtWidgets          import (QFrame,
-                                        QLabel,
+from PySide6.QtWidgets          import (QWidget,
+                                        QFrame,
+                                        QSizePolicy,
                                         QVBoxLayout)
-from PySide6.QtGui              import (QPixmap)
+from PySide6.QtGui              import  QPainter
 from PySide6.QtWebEngineCore    import  QWebEngineSettings
 from PySide6.QtWebEngineWidgets import  QWebEngineView
 from PySide6.QtSvgWidgets       import  QSvgWidget
 
 from SvgMetadataReader.SvgMetadataReader import SvgMetadataReader
+
+
+class CenteredSvgWidget(QSvgWidget) :
+
+    def paintEvent(self, event) :
+
+        painter = QPainter(self)
+
+        if not self.renderer().isValid():
+            return
+
+        view_box = self.renderer().viewBoxF()
+        widget_rect = QRectF(self.rect())
+
+        scaled = view_box
+        scaled.scale(widget_rect.size(), Qt.KeepAspectRatio)
+
+        x = (widget_rect.width() - scaled.width()) / 2
+        y = (widget_rect.height() - scaled.height()) / 2
+        target = QRectF(x, y, scaled.width(), scaled.height())
+
+        self.renderer().render(painter, target)
+
+
+class CenteredSvgWidget_New(QSvgWidget) :
+
+    def paintEvent(self, event):
+
+        nameMethod = self.__class__.__name__ + \
+                     "::paintEvent"
+
+
+        print(nameMethod + " : Enter")
+
+        width  = self.width()
+        height = self.height()
+
+        print(nameMethod + " : SVG image onscreen width  = " + str(width))
+        print(nameMethod + " : SVG image onscreen height = " + str(height))
+
+        # renderer =
+
+        default_size = self.renderer().defaultSize()
+
+        print(nameMethod + " : SVG image file width  = " + str(default_size.width()))
+        print(nameMethod + " : SVG image file height = " + str(default_size.height()))
+
+        painter = QPainter(self)
+
+        renderer = self.renderer()
+
+        if not renderer.isValid():
+            return
+
+        view_box = renderer.viewBoxF()
+        widget_rect = QRectF(self.rect())
+
+        scale = min(widget_rect.width() / view_box.width(),
+                    widget_rect.height() / view_box.height())
+
+        new_width = view_box.width() * scale
+        new_height = view_box.height() * scale
+
+        x = (widget_rect.width() - new_width) / 2
+        y = (widget_rect.height() - new_height) / 2
+
+        target = QRectF(x, y, new_width, new_height)
+        renderer.render(painter, target)
+
+        print(nameMethod + " : Exit")
+
+
+class AspectRatioSvgWidget(CenteredSvgWidget_New) :
+
+    def resizeEvent(self, event) :
+
+        renderer = self.renderer()
+
+        if not renderer.isValid():
+            return super().resizeEvent(event)
+
+        view_box = renderer.viewBoxF()
+        widget_w = self.width()
+        widget_h = self.height()
+
+        scale = min(widget_w / view_box.width(),
+                    widget_h / view_box.height())
+
+        new_w = int(view_box.width() * scale)
+        new_h = int(view_box.height() * scale)
+
+        self.setFixedSize(new_w, new_h)
+
 
 
 class VisualiserPanelPlot(QFrame) :
@@ -57,7 +152,7 @@ class VisualiserPanelPlot(QFrame) :
         self.__create_actions()
         self.__create_menus()
         self.__create_toolbars()
-        self.__create_and_configure_layouts()
+        self.__create_and_configure_layout()
         self.__create_signal_connections()
 
         # Perform various configuration tasks.
@@ -82,7 +177,6 @@ class VisualiserPanelPlot(QFrame) :
     def __create_widgets(self) :
 
         self.plot_title           = QWebEngineView()
-        self.label_panel_plotView = QLabel()
         self.image                = QSvgWidget()
 
 
@@ -116,17 +210,31 @@ class VisualiserPanelPlot(QFrame) :
 
     # Invoked from : initialise
 
-    def __create_and_configure_layouts(self) :
+    def __create_and_configure_layout(self) :
 
-        # Create and set a layout for this widget.
+        # Create a layout for this widget, i.e. self, and force this widget
+        # to use it.
 
         layout = QVBoxLayout()
 
         self.setLayout(layout)
 
+        self.plot_title.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.image.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Tell the layout not to expand self.plot_title, but instead, to give
+        # all of the extra space to self.image.
+
+        container = QWidget()
+
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.addStretch()
+        container_layout.addWidget(self.image, alignment=Qt.AlignCenter)
+        container_layout.addStretch()
+
         layout.addWidget(self.plot_title)
-        layout.addWidget(self.image)
-        # layout.addWidget()
+        layout.addWidget(container, stretch=20)
 
         self.__setup_panel_plotTitle()
         self.__setup_panel_plotView()
@@ -245,14 +353,6 @@ class VisualiserPanelPlot(QFrame) :
 
         # Get the width, height, and size of the label.
 
-        widthLabelImage  = self.label_panel_plotView.width()
-        heightLabelImage = self.label_panel_plotView.height()
-        sizeLabelImage   = self.label_panel_plotView.size()
-
-        print(nameMethod + " : Width of image  = " + str(widthLabelImage))
-        print(nameMethod + " : Height of image = " + str(heightLabelImage))
-        print(nameMethod + " : Size of image   = " + str(sizeLabelImage))
-
         if False :
 
             imageScaled = self.image.scaled(sizeLabelImage,
@@ -266,11 +366,24 @@ class VisualiserPanelPlot(QFrame) :
 
         # self.label_panel_plotView.update()
 
-        print("Image label width  = ", widthLabelImage)
-        print("Image label height = ", heightLabelImage)
-
         # TODO : Uncomment this when ready.
 
         # self.update_panel_side()
+
+        print(nameMethod + " : Exit")
+
+
+    @Slot(str, str, str)
+    def slot_svg_metadata_updated(self, base, azimuth, elevation) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::signal_svg_metadata_updated"
+
+
+        print(nameMethod + " : Enter")
+
+        print(nameMethod + " : base      = " + base)
+        print(nameMethod + " : azimuth   = " + azimuth)
+        print(nameMethod + " : elevation = " + elevation)
 
         print(nameMethod + " : Exit")

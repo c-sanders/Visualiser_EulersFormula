@@ -11,7 +11,7 @@ from PySide6.QtGui        import  QPainter
 from PySide6.QtSvgWidgets import  QSvgWidget
 
 
-class MySvgWidget(QSvgWidget) :
+class SvgWidget(QSvgWidget) :
 
     def __setup_values(self) :
 

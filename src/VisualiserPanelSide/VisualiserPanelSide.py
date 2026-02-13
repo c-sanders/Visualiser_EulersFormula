@@ -226,8 +226,7 @@ class VisualiserPanelSide(QFrame) :
 
         #   - Configure components
 
-        self.title_base.setObjectName("labelNoBorder")
-        self.label_base.setObjectName("labelWithBorder")
+        self.label_base.setObjectName("label_whiteBackground")
 
 
     def create_and_configure_widgets_viewing_angle(self) :
@@ -248,8 +247,8 @@ class VisualiserPanelSide(QFrame) :
         self.viewAngleElevLabel.setObjectName("labelNoBorder")
         self.viewAngleAzimLabel.setObjectName("labelNoBorder")
 
-        self.elevationLabel.setObjectName("labelWithBorder")
-        self.azimuthLabel.setObjectName("labelWithBorder")
+        self.elevationLabel.setObjectName("label_whiteBackground")
+        self.azimuthLabel.setObjectName("label_whiteBackground")
 
         self.viewAngleElevLabel.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
@@ -490,7 +489,23 @@ class VisualiserPanelSide(QFrame) :
         anywhere else.
         """
 
-        pass
+        self.setStyleSheet("""
+            QGroupBox {
+                background-color: lightgray;
+            }
+            
+            QFrame {
+                background-color: lightgray;
+            }
+            
+            QPushButton {
+                background-color: lightgray;
+            }
+            
+            QLabel#label_whiteBackground {
+                background-color: white;
+            }  
+        """)
 
 
     @Slot(str, str, str)

@@ -46,9 +46,9 @@ class VisualiserMainWindow(QMainWindow) :
     #   ├── Visualiser_MainWindow.__create_actions()
     #   ├── Visualiser_MainWindow.__create_menus()
     #   ├── Visualiser_MainWindow.__create_toolbars()
-    #   ├── Visualiser_MainWindow.__create_and_configure_layouts()
+    #   ├── Visualiser_MainWindow.__setup_layouts()
     #   │     └── Visualiser_MainWindow.__setup_widget_central()
-    #   ├── Visualiser_MainWindow.__create_signal_connections
+    #   ├── Visualiser_MainWindow.__setup_signal_connections
     #   └── Visualiser_MainWindow.__configure
     #         ├── setWindowTitle
     #         ├── panel_side.set_window_main
@@ -70,6 +70,10 @@ class VisualiserMainWindow(QMainWindow) :
         self.__setup_settings()
         self.__create_widgets()
         self.__create_objects()
+        self.__create_actions()   # Empty
+        self.__create_menus()     # Empty
+        self.__create_toolbars()  # Empty
+        self.__create_threading_components()
 
         print(nameMethod + " : Exit")
 
@@ -80,15 +84,10 @@ class VisualiserMainWindow(QMainWindow) :
 
             return
 
-        self.__create_threading_components()
-
         # Create GUI components.
 
-        self.__create_actions()
-        self.__create_menus()
-        self.__create_toolbars()
-        self.__create_and_configure_layouts()
-        self.__create_signal_connections()
+        self.__setup_layouts()
+        self.__setup_signal_connections()
 
         # Perform various configuration tasks.
 
@@ -161,10 +160,10 @@ class VisualiserMainWindow(QMainWindow) :
         pass
 
 
-    def __create_signal_connections(self) :
+    def __setup_signal_connections(self) :
 
         nameMethod = self.__class__.__name__ + \
-                     "::__create_signal_connections"
+                     "::__setup_signal_connections"
 
 
         print(nameMethod + " : Enter")
@@ -224,7 +223,7 @@ class VisualiserMainWindow(QMainWindow) :
         self.__setup_objects_other()
 
 
-    def __create_and_configure_layouts(self) :
+    def __setup_layouts(self) :
 
         """
         Set the layout for the central widget and then set the central widget
@@ -237,7 +236,7 @@ class VisualiserMainWindow(QMainWindow) :
         """
 
         nameMethod = self.__class__.__name__ + \
-                     "::__create_and_configure_layouts"
+                     "::__setup_layouts"
 
 
         print(nameMethod + " : Enter")

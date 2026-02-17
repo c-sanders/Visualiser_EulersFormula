@@ -1,16 +1,21 @@
 from PySide6.QtCore             import (Qt,
+                                        QSize,
                                         QRectF,
                                         Slot)
 from PySide6.QtWidgets          import (QWidget,
                                         QFrame,
                                         QSizePolicy,
-                                        QVBoxLayout)
+                                        QVBoxLayout,
+                                        QHBoxLayout,
+                                        QPushButton)
 from PySide6.QtGui              import  QPainter
 from PySide6.QtWebEngineCore    import  QWebEngineSettings
 from PySide6.QtWebEngineWidgets import  QWebEngineView
 from PySide6.QtSvgWidgets       import  QSvgWidget
 
-from SvgMetadataReader.SvgMetadataReader import SvgMetadataReader
+from VisualiserSvgWidget.VisualiserSvgWidget import VisualiserSvgWidget
+
+from SvgMetadataReader.SvgMetadataReader     import SvgMetadataReader
 
 
 class CenteredSvgWidget(QSvgWidget) :
@@ -135,13 +140,19 @@ class VisualiserPanelPlot(QFrame) :
         self._is_initialised = False
 
         self.__setup_settings()
-        self.__create_widgets()
+        self.__create_and_configure_widgets()
         self.__create_objects()
 
         print(nameMethod + " : Exit")
 
 
     def initialise(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::initialise"
+
+
+        print(nameMethod + " : Enter")
 
         if self._is_initialised :
 
@@ -163,6 +174,8 @@ class VisualiserPanelPlot(QFrame) :
 
         self._is_initialised = True
 
+        print(nameMethod + " : Exit")
+
 
     # Invoked from : __init__
 
@@ -174,10 +187,20 @@ class VisualiserPanelPlot(QFrame) :
 
     # Invoked from : __init__
 
-    def __create_widgets(self) :
+    def __create_and_configure_widgets(self) :
 
-        self.plot_title           = QWebEngineView()
-        self.image                = QSvgWidget()
+        self.plot_title      = QWebEngineView()
+        self.image           = QSvgWidget()
+
+        self.frame_buttons   = QFrame()
+
+        self.pushButton_dimensions = QPushButton("Dimensions")
+        self.pushButton_screenshot = QPushButton("Screenshot")
+        self.pushButton_exit       = QPushButton("Exit")
+
+        self.pushButton_dimensions.setFixedSize(QSize(100, 30))
+        self.pushButton_screenshot.setFixedSize(100, 30)
+        self.pushButton_exit.setFixedSize(QSize(100, 30))
 
 
     # Invoked from : __init__
@@ -212,6 +235,12 @@ class VisualiserPanelPlot(QFrame) :
 
     def __create_and_configure_layout(self) :
 
+        nameMethod = self.__class__.__name__ + \
+                     "::__create_and_configure_layout"
+
+
+        print(nameMethod + " : Enter")
+
         # Create a layout for this widget, i.e. self, and force this widget
         # to use it.
 
@@ -233,11 +262,14 @@ class VisualiserPanelPlot(QFrame) :
         container_layout.addWidget(self.image, alignment=Qt.AlignCenter)
         container_layout.addStretch()
 
-        layout.addWidget(self.plot_title)
-        layout.addWidget(container, stretch=20)
+        # layout.addWidget(self.plot_title)
+        # layout.addWidget(container, stretch=20)
 
         self.__setup_panel_plotTitle()
         self.__setup_panel_plotView()
+        self.__setup_panel_buttons()
+
+        print(nameMethod + " : Exit")
 
 
     # Invoked from : initialise
@@ -258,26 +290,16 @@ class VisualiserPanelPlot(QFrame) :
 
     def __setup_panel_plotTitle(self) :
 
-        if self.plot_title_use_png_or_mathjax == "mathjax" :
+        nameMethod = self.__class__.__name__ + \
+                     "::__setup_panel_plotTitle"
 
-            self.__setup_panel_plotTitle_usingMathJax()
-
-        if self.plot_title_use_png_or_mathjax == "png":
-
-            self.__setup_panel_plotTitle_usingPngFile()
-
-
-    def __setup_panel_plotTitle_usingMathJax(self):
-
-        nameMethod = "Visualiser_Panel_Plot::createAndConfigure_guiComponents_panel_plot"
+        frame_plotTitle        = QFrame()
+        layout_frame_plotTitle = QVBoxLayout(frame_plotTitle)
 
 
         print(nameMethod + " : Enter")
 
-        # file_path = os.path.abspath("plot_title_basic.html")
-        # local_url = QUrl.fromLocalFile(file_path)
-
-        with open("/home/craig/source_code/python/visualiser/html/mathjax.html", "r") as file_handle :
+        with open("/home/craig/source_code/python/visualiser_8_Feb_2026/Visualiser_EulersFormula/src/html/mathjax.html", "r") as file_handle :
 
             html_mathjax = file_handle.read()
 
@@ -289,6 +311,7 @@ class VisualiserPanelPlot(QFrame) :
 
         # self.plot_title.load(local_url)
         # self.plot_title.setUrl(QUrl.fromLocalFile("/home/craig/source_code/python/Visualiser_EulersFormula/plot_title_basic.html"))
+
         self.plot_title.setHtml(html_mathjax)
 
         self.plot_title.settings().setAttribute \
@@ -296,6 +319,27 @@ class VisualiserPanelPlot(QFrame) :
                 QWebEngineSettings.WebAttribute.ShowScrollBars,
                 False
             )
+
+        frame_plotTitle.setFrameShape(QFrame.Box)
+        frame_plotTitle.setLineWidth(1)
+        frame_plotTitle.setMidLineWidth(0)
+
+        self.plot_title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.plot_title.setFixedHeight(80)  # adjust to taste
+
+        frame_plotTitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        frame_plotTitle.setStyleSheet("""
+            border:        1px solid black;  /* border thickness and color */
+            border-radius: 5px;              /* rounded corners */
+            padding:       5px;              /* space inside the frame */
+        """)
+
+        layout_frame_plotTitle.addWidget(self.plot_title)
+
+        self.layout().addWidget(frame_plotTitle)
+
+        print(nameMethod + " : Exit")
 
 
     def __setup_panel_plotView(self) :
@@ -305,7 +349,32 @@ class VisualiserPanelPlot(QFrame) :
 
         print(nameMethod + " : Enter")
 
-        self.slot_update_panel_plotView(self.filename_plot)
+        svg_widget_b = VisualiserSvgWidget("/home/craig/source_code/python/visualiser_8_Feb_2026/svg/Eulers_formula_(45,8).svg")
+        svg_widget_b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # self.slot_update_panel_plotView(self.filename_plot)
+
+        self.layout().addWidget(svg_widget_b)
+
+        print(nameMethod + " : Exit")
+
+
+    def __setup_panel_buttons(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::__setup_panel_buttons"
+
+
+        print(nameMethod + " : Enter")
+
+        layout_buttons = QHBoxLayout(self.frame_buttons)
+
+        layout_buttons.addWidget(self.pushButton_dimensions)
+        layout_buttons.addWidget(self.pushButton_screenshot)
+        layout_buttons.addWidget(self.pushButton_exit)
+
+        self.layout().addStretch(1)
+        self.layout().addWidget(self.frame_buttons)
 
         print(nameMethod + " : Exit")
 
@@ -339,37 +408,6 @@ class VisualiserPanelPlot(QFrame) :
         self.parameters = self.svgMetadataReader.get_parameters_from_file(filename)
         self.svgMetadataReader.print_plot_parameters()
 
-        # Open the image file and then load it into the panel_plotView
-
-        self.image.load(filename)
-
-        # if self.image is None :
-
-        #     print(nameMethod + " : self.image = None")
-
-        # else :
-
-        #     print(nameMethod + " : self.image = " + self.image)
-
-        # Get the width, height, and size of the label.
-
-        if False :
-
-            imageScaled = self.image.scaled(sizeLabelImage,
-                                            Qt.AspectRatioMode.KeepAspectRatio,
-                                            Qt.TransformationMode.SmoothTransformation)
-
-            self.label_panel_plotView.setPixmap(imageScaled)
-            self.label_panel_plotView.setScaledContents(True)
-
-        # I don't think the following line of code is necessary.
-
-        # self.label_panel_plotView.update()
-
-        # TODO : Uncomment this when ready.
-
-        # self.update_panel_side()
-
         print(nameMethod + " : Exit")
 
 
@@ -377,7 +415,7 @@ class VisualiserPanelPlot(QFrame) :
     def slot_svg_metadata_updated(self, base, azimuth, elevation) :
 
         nameMethod = self.__class__.__name__ + \
-                     "::signal_svg_metadata_updated"
+                     "::slot_svg_metadata_updated"
 
 
         print(nameMethod + " : Enter")

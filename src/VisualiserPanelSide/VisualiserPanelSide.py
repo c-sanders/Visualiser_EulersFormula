@@ -1,7 +1,6 @@
 from PySide6.QtCore    import (Qt,
                                QSize,
                                Slot)
-
 from PySide6.QtWidgets import (QFrame,
                                QPushButton,
                                QVBoxLayout,
@@ -9,7 +8,10 @@ from PySide6.QtWidgets import (QFrame,
                                QSpinBox,
                                QGroupBox,
                                QRadioButton,
-                               QButtonGroup)
+                               QButtonGroup,
+                               QDial)
+from PySide6.QtGui     import (QPalette,
+                               QColor)
 
 
 class VisualiserPanelSide(QFrame) :
@@ -25,6 +27,7 @@ class VisualiserPanelSide(QFrame) :
     # │     ├── create_and_configure_widgets_plot_parameters
     # │     ├── create_and_configure_widgets_viewing_angle
     # │     ├── create_and_configure_widgets_playback_controls
+    # │     ├── create_and_configure_widgets_window_dimensions
     # │     └── create_and_configure_widgets_other
     # └── Visualiser_Panel_Side.__create_objects
 
@@ -39,6 +42,7 @@ class VisualiserPanelSide(QFrame) :
     # │     ├── setup_group_box_parameters
     # │     ├── setup_group_box_viewing_angle
     # │     ├── setup_group_box_playback_controls
+    # │     ├── setup_group_box_frame_delay
     # │     ├── setup_remaining_controls
     # │     └── setupEventHandlers_buttons
     # ├── Visualiser_Panel_Side.__create_signal_connections
@@ -108,7 +112,13 @@ class VisualiserPanelSide(QFrame) :
         self.title_viewingAngle_elevation = "Elevation"
         self.title_viewingAngle_azimuth   = "Azimuth"
 
-        self.title_playbackControl        = "Playback controls :"
+        self.title_playbackControl         = "Playback controls :"
+        self.title_playbackDirection       = "Playback direction :"
+        self.title_frameDelay              = "Frame delay (in ms)"
+        self.title_windowDimensions        = "Window dimensions :"
+        self.title_windowDimensions_width  = "Width (in pixels)"
+        self.title_windowDimensions_height = "Height (in pixels)"
+        self.title_pane_dial               = "Imaginary number :"
 
         self.plot_title_use_png_or_mathjax    = "mathjax"
 
@@ -118,12 +128,13 @@ class VisualiserPanelSide(QFrame) :
         self.playForward                      = True
 
         self.size_buttons                     = QSize(100, 30)
+        self.size_dials                       = QSize(100, 100)
 
         self.tool_tip_button_play_stop     = ("Name : self.pushButton_playStop"
                                               "Connects to the method : MainWindow::toggleEventAnimationLoop"
                                              )
         self.tool_tip_button_play_forward  = ("Name : self.pushButton_forward\n"
-                                              "Connects to the method : MainWindow::playAnimationForward"
+                                              "Connects to the method Azimuth: MainWindow::playAnimationForward"
                                              )
         self.tool_tip_button_play_backward = ("Name : self.pushButton_backward\n"
                                               "Connects to the method : MainWindow::playAnimationBackward"
@@ -164,6 +175,8 @@ class VisualiserPanelSide(QFrame) :
         self.create_and_configure_widgets_plot_parameters()
         self.create_and_configure_widgets_viewing_angle()
         self.create_and_configure_widgets_playback_controls()
+        self.create_and_configure_widgets_window_dimensions()
+        self.create_and_configure_widgets_pane_dial()
         self.create_and_configure_widgets_other()
 
 
@@ -200,6 +213,8 @@ class VisualiserPanelSide(QFrame) :
         self.setup_group_box_parameters()
         self.setup_group_box_viewing_angle()
         self.setup_group_box_playback_controls()
+        self.setup_group_box_frame_delay()
+        self.setup_group_box_window_dimensions()
 
         self.setup_remaining_controls()
 
@@ -210,7 +225,7 @@ class VisualiserPanelSide(QFrame) :
 
     def __create_signal_connections(self) :
 
-        pass
+        self.pushButton_remove.clicked.connect(self.__slot_remove_button_from_layout)
 
 
     def create_and_configure_widgets_plot_parameters(self) :
@@ -241,6 +256,11 @@ class VisualiserPanelSide(QFrame) :
         self.elevationLabel     = QLabel("45\u00B0")
         self.viewAngleAzimLabel = QLabel(self.title_viewingAngle_azimuth)
         self.azimuthLabel       = QLabel("0\u00B0")
+
+        # TODO : Finish implementing the following.
+
+        self.dimensionsWindowLabel = QLabel("Window dimensions")
+        # self.azimuthLabel       = QLabel("0\u00B0")
 
         #   - Configure components
 
@@ -280,7 +300,6 @@ class VisualiserPanelSide(QFrame) :
         self.delayFrameLabel     = QLabel("Frame delay (in ms)")
         self.delayFrame          = QSpinBox()
 
-        self.pushButton_playStop = QPushButton("Play")
 
         # self.labelPlayDirection = QLabel("Current direction")
         # self.labelPlayDirection.setObjectName("labelNoBorder")
@@ -306,32 +325,103 @@ class VisualiserPanelSide(QFrame) :
         # self.labelCurrentPlayDirection.setObjectName("labelWithBorder")
         # self.labelCurrentPlayDirection.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Play/Stop button
-
-        self.pushButton_playStop.setFixedSize(self.size_buttons)
-
         self.groupBox_playbackControl = QGroupBox(self.title_playbackControl)
-        self.layout_playbackControl   = QVBoxLayout()
-
+        self.layout_playbackControl   = QVBoxLayout(self.groupBox_playbackControl)
         self.groupBox_playbackControl.setObjectName("groupBox_blackText")
-        self.groupBox_playbackControl.setLayout(self.layout_playbackControl)
+
+        self.groupBox_playbackDirection = QGroupBox(self.title_playbackDirection)
+        self.layout_playbackDirection   = QVBoxLayout(self.groupBox_playbackDirection)
+        self.groupBox_playbackDirection.setObjectName("groupBox_blackText")
+
+        # self.groupBox_playbackControl.setLayout(self.layout_playbackControl)
+
+        self.groupBox_frameDelay = QGroupBox(self.title_frameDelay)
+        self.layout_frameDelay   = QVBoxLayout(self.groupBox_frameDelay)
+
+        self.groupBox_frameDelay.setObjectName("groupBox_blackText")
+
+
+    def create_and_configure_widgets_window_dimensions(self) :
+
+        # Screen dimensions
+
+        #   - Create components
+
+        self.label_title_windowDimensions_width  = QLabel(self.title_windowDimensions_width)
+        self.label_value_windowDimensions_width  = QLabel("---")
+        self.label_title_windowDimensions_height = QLabel(self.title_windowDimensions_height)
+        self.label_value_windowDimensions_height = QLabel("---")
+
+        self.groupBox_windowDimensions = QGroupBox(self.title_windowDimensions)
+        self.layout_windowDimensions   = QVBoxLayout(self.groupBox_windowDimensions)
+
+        self.label_value_windowDimensions_width.setObjectName("label_whiteBackground")
+        self.label_value_windowDimensions_height.setObjectName("label_whiteBackground")
+
+        self.label_value_windowDimensions_width.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.label_value_windowDimensions_height.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        self.layout_windowDimensions.addWidget(self.label_title_windowDimensions_width)
+        self.layout_windowDimensions.addWidget(self.label_value_windowDimensions_width)
+        self.layout_windowDimensions.addWidget(self.label_title_windowDimensions_height)
+        self.layout_windowDimensions.addWidget(self.label_value_windowDimensions_height)
 
 
     def create_and_configure_widgets_other(self) :
 
         # Other components
 
-        self.pushButton_shutdown   = QPushButton("Shutdown")
-        self.pushButton_screenshot = QPushButton("Screenshot")
-        self.pushButton_exit       = QPushButton("Exit")
+        self.pushButton_playStop = QPushButton("Play")
+        self.pushButton_shutdown = QPushButton("Remove me")
+        self.pushButton_remove   = QPushButton("Remove")
+
+        # Play/Stop button
+
+        self.pushButton_playStop.setFixedSize(self.size_buttons)
 
         # self.pushButton_forward.setToolTip(self.tool_tip_button_play_forward)
         # self.pushButton_backward.setToolTip(self.tool_tip_button_play_backward)
 
-        self.pushButton_exit.setToolTip(self.tool_tip_button_exit)
+        # self.pushButton_exit.setToolTip(self.tool_tip_button_exit)
 
         self.pushButton_playStop.setToolTip(self.tool_tip_button_play_forward)
         self.pushButton_shutdown.setToolTip("Connects to the method : MainWindow::shutdownAnimationThread")
+
+
+    def create_and_configure_widgets_pane_dial(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::create_and_configure_widgets_pane_dial"
+
+        dial  = QDial()
+        label = QLabel("---")
+
+        self.groupBox_pane_dial    = QGroupBox(self.title_pane_dial)
+        layout_pane_dial = QVBoxLayout(self.groupBox_pane_dial)
+
+        label.setObjectName("label_whiteBackground")
+        label.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        print(nameMethod, " : Enter")
+
+        # Configure the dial.
+
+        dial.setRange(0, 100)
+        dial.setNotchesVisible(True)
+        dial.setFixedSize(self.size_dials)
+        dial.setWrapping(True)
+
+        # Configure the notches that are associated with the dial.
+
+        palette = dial.palette()
+        palette.setColor(QPalette.Dark, QColor("black"))  # Notch color
+        palette.setColor(QPalette.Shadow, QColor("black"))  # Sometimes used too
+        dial.setPalette(palette)
+
+        layout_pane_dial.addWidget(dial, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout_pane_dial.addWidget(label)
+
+        print(nameMethod, " : Exit")
 
 
     def setup_remaining_controls(self) :
@@ -345,18 +435,24 @@ class VisualiserPanelSide(QFrame) :
         # Add the Play and Exit buttons to the side panel.
 
         self.layout().addStretch(1)
+        # self.layout().addWidget(self.pushButton_playStop, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         self.layout().addWidget(self.pushButton_playStop, alignment=Qt.AlignmentFlag.AlignHCenter)
 
-        self.layout().addStretch(1)
-        self.layout().addWidget(self.pushButton_screenshot,     alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.pushButton_screenshot.setFixedSize(self.size_buttons)
+        self.layout().addWidget(self.groupBox_pane_dial)
 
-        print(nameMethod + " : self.pushButton_screenshot.width  = " + str(self.pushButton_screenshot.width()))
-        print(nameMethod + " : self.pushButton_screenshot.height = " + str(self.pushButton_screenshot.height()))
+        self.layout().addStretch(2)
+        # self.layout().addWidget(self.pushButton_remove, alignment=Qt.AlignmentFlag.AlignHCenter)
+        # self.layout().addStretch(1)
+        # self.layout().addWidget(self.pushButton_screenshot, alignment=Qt.AlignmentFlag.AlignHCenter)
+        # self.pushButton_screenshot.setFixedSize(self.size_buttons)
 
-        self.layout().addStretch(1)
-        self.layout().addWidget(self.pushButton_exit,     alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.pushButton_exit.setFixedSize(self.size_buttons)
+        # print(nameMethod + " : self.pushButton_screenshot.width  = " + str(self.pushButton_screenshot.width()))
+        # print(nameMethod + " : self.pushButton_screenshot.height = " + str(self.pushButton_screenshot.height()))
+
+        # self.layout().addStretch(1)
+        # self.layout().addWidget(self.pushButton_exit,     alignment=Qt.AlignmentFlag.AlignHCenter)
+        # self.pushButton_exit.setFixedSize(self.size_buttons)
 
         # pushButton_forward.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # pushButton_backward.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -377,16 +473,16 @@ class VisualiserPanelSide(QFrame) :
     def setup_group_box_parameters(self) :
 
         groupBox_plotParameters = QGroupBox(self.title_plotParameters)
-        layout_plotParameters   = QVBoxLayout()
+        self.layout_plotParameters   = QVBoxLayout()
 
 
         groupBox_plotParameters.setObjectName("groupBox_blackText")
-        groupBox_plotParameters.setLayout(layout_plotParameters)
+        groupBox_plotParameters.setLayout(self.layout_plotParameters)
 
         # Base
 
-        layout_plotParameters.addWidget(self.title_base)
-        layout_plotParameters.addWidget(self.label_base)
+        self.layout_plotParameters.addWidget(self.title_base)
+        self.layout_plotParameters.addWidget(self.label_base)
 
         self.layout().addWidget(groupBox_plotParameters)
 
@@ -409,7 +505,9 @@ class VisualiserPanelSide(QFrame) :
         layout_viewingAngle.addWidget(self.viewAngleAzimLabel)
         layout_viewingAngle.addWidget(self.azimuthLabel)
 
-        self.layout().addWidget(groupBox_viewingAngle)
+        self.layout_plotParameters.addWidget(groupBox_viewingAngle)
+
+        # self.layout().addWidget(groupBox_viewingAngle)
 
 
     # Controls that relate to;
@@ -418,22 +516,37 @@ class VisualiserPanelSide(QFrame) :
 
     def setup_group_box_playback_controls(self) :
 
-        self.layout_playbackControl.addWidget(self.radioButton_playForward,  alignment=Qt.AlignmentFlag.AlignLeft)
-        self.layout_playbackControl.addWidget(self.radioButton_playBackward, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.title_playbackDirection      = "Playback direction :"
+
+        self.layout_playbackDirection.addWidget(self.radioButton_playForward,  alignment=Qt.AlignmentFlag.AlignLeft)
+        self.layout_playbackDirection.addWidget(self.radioButton_playBackward, alignment=Qt.AlignmentFlag.AlignLeft)
 
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)  # Set the frame shape to a horizontal line
         line.setFrameShadow(QFrame.Shadow.Sunken)  # Set the shadow effect
 
-        self.layout_playbackControl.addWidget(line)
+        self.layout_playbackControl.addWidget(self.groupBox_playbackDirection)
+
+        self.layout().addWidget(self.groupBox_playbackControl)
+
+
+    def setup_group_box_frame_delay(self) :
 
         # layout_playbackControl.addWidget(self.pushButton_backward, alignment=Qt.AlignmentFlag.AlignHCenter)
         # layout_playbackControl.addWidget(self.pushButton_forward, alignment=Qt.AlignmentFlag.AlignHCenter)
 
-        self.layout_playbackControl.addWidget(self.delayFrameLabel)
+        # self.layout_frameDelay.addWidget(self.delayFrameLabel)
+        self.layout_frameDelay.addWidget(self.delayFrame)
+
+        # self.layout_playbackControl.addWidget(self.pushButton_playStop)
+
+        self.layout_playbackControl.addWidget(QLabel(self.title_frameDelay))
         self.layout_playbackControl.addWidget(self.delayFrame)
 
-        self.layout().addWidget(self.groupBox_playbackControl)
+
+    def setup_group_box_window_dimensions(self) :
+
+        self.layout().addWidget(self.groupBox_windowDimensions)
 
 
     def setupEventHandlers_buttons(self):
@@ -445,7 +558,9 @@ class VisualiserPanelSide(QFrame) :
 
         # self.pushButton_shutdown.clicked.connect(self.shutdownAnimationThread)
 
-        self.pushButton_exit.clicked.connect(self.window_main.close)
+        # self.pushButton_exit.clicked.connect(self.window_main.close)
+
+        pass
 
 
     def shutdown_routine(self) :
@@ -504,12 +619,16 @@ class VisualiserPanelSide(QFrame) :
             
             QLabel#label_whiteBackground {
                 background-color: white;
-            }  
+            }
+            
+            QSpinBox {
+                qproperty-alignment: AlignRight;
+            }
         """)
 
 
     @Slot(str, str, str)
-    def __signal_svg_metadata_updated(self, base, azimuth, elevation):
+    def __slot_svg_metadata_updated(self, base, azimuth, elevation):
 
         nameMethod = self.__class__.__name__ + \
                      "::__signal_svg_metadata_updated"
@@ -520,5 +639,38 @@ class VisualiserPanelSide(QFrame) :
         # This function is the slot that runs when the signal is received
 
         print(nameMethod + " : base = " + base)
+
+        print(nameMethod + " : Exit")
+
+
+    @Slot(str, str)
+    def slot_eventResize(self, width_window_main, height_window_main) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::slot_eventResize"
+
+
+        print(nameMethod + " : Enter")
+
+        print(nameMethod + " : (width, height) = (" + width_window_main + ", " + height_window_main + ")")
+
+        self.label_value_windowDimensions_width.setText(width_window_main)
+        self.label_value_windowDimensions_height.setText(height_window_main)
+
+        print(nameMethod + " : Exit")
+
+
+    @Slot()
+    def __slot_remove_button_from_layout(self):
+
+        nameMethod = self.__class__.__name__ + \
+                     "::__slot_remove_button_from_layout"
+
+
+        print(nameMethod + " : Enter")
+
+        self.layout().removeWidget(self.pushButton_remove)
+        self.pushButton_remove.setParent(None)
+        # self.update()
 
         print(nameMethod + " : Exit")

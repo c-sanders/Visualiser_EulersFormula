@@ -146,7 +146,7 @@ class VisualiserPanelPlot(QFrame) :
         print(nameMethod + " : Exit")
 
 
-    def initialise(self) :
+    def initialise(self, app) :
 
         nameMethod = self.__class__.__name__ + \
                      "::initialise"
@@ -157,6 +157,8 @@ class VisualiserPanelPlot(QFrame) :
         if self._is_initialised :
 
             return
+
+        self.app = app
 
         # Create GUI components.
 
@@ -207,6 +209,7 @@ class VisualiserPanelPlot(QFrame) :
 
     def __create_objects(self) :
 
+        self.app               = None
         self.svgMetadataReader = SvgMetadataReader()
 
 
@@ -278,7 +281,7 @@ class VisualiserPanelPlot(QFrame) :
 
         # Perform various configuration tasks.
 
-        pass
+        self.pushButton_exit.clicked.connect(self.app.quit)
 
 
     # Invoked from : initialise

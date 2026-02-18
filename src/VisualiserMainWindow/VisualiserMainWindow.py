@@ -1,4 +1,7 @@
-from PySide6.QtCore                                  import  QThread
+from PySide6.QtCore                                  import (QSize,
+                                                             QThread,
+                                                             Signal,
+                                                             Slot)
 from PySide6.QtWidgets                               import (QMainWindow,
                                                              QFrame,
                                                              QHBoxLayout)
@@ -10,6 +13,9 @@ from VisualiserAnimationLoop.VisualiserAnimationLoop import  VisualiserAnimation
 
 
 class VisualiserMainWindow(QMainWindow) :
+
+    signal_eventResize = Signal(str, str)
+
 
     # According to advice from ChatGPT;
     #
@@ -78,11 +84,19 @@ class VisualiserMainWindow(QMainWindow) :
         print(nameMethod + " : Exit")
 
 
-    def initialise(self) :
+    def initialise(self, app) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::__init__"
+
+
+        print(nameMethod + " : Enter")
 
         if self._is_initialised :
 
             return
+
+        self.app = app
 
         # Create GUI components.
 
@@ -96,9 +110,16 @@ class VisualiserMainWindow(QMainWindow) :
         # Initialise child widgets.
 
         self.panel_side.initialise()
-        self.panel_plot.initialise()
+        self.panel_plot.initialise(self.app)
+
+        self.panel_side.set_window_main(self)
+
+        self.setMinimumSize(self.size_window_minimum)
+        self.resize(self.size_window_minimum)
 
         self._is_initialised = True
+
+        print(nameMethod + " : Exit")
 
 
     def __setup_settings(self) :
@@ -109,7 +130,10 @@ class VisualiserMainWindow(QMainWindow) :
 
         print(nameMethod + " : Enter")
 
-        self.titleWindow = "Visualiser"
+        self.titleWindow           = "Visualiser"
+        self.width_window_minimum  = 960
+        self.height_window_minimum = 820
+        self.size_window_minimum   = QSize(self.width_window_minimum, self.height_window_minimum)
 
         print(nameMethod + " : Exit")
 
@@ -142,6 +166,7 @@ class VisualiserMainWindow(QMainWindow) :
 
     def __create_objects(self) :
 
+        self.app                 = None
         self.svg_metadata_reader = SvgMetadataReader()
 
 
@@ -174,7 +199,13 @@ class VisualiserMainWindow(QMainWindow) :
             # Signal : VisualiserAnimationLoop : signal_svg_metadata_updated
             # Slot   : VisualiserPanelSide     : __signal_svg_metadata_updated
 
-            self.worker_animation.connect(self.panel_plot.slot_svg_metadata_updated)
+            # self.worker_animation.connect(self.panel_plot.slot_svg_metadata_updated)
+
+            self.signal_eventResize.connect(self.slot_eventResize)
+
+            self.signal_eventResize.connect(self.panel_side.slot_eventResize)
+
+            # self.signal_eventResize.emit(str(width), str(height))
 
         except Exception as e :
 
@@ -263,3 +294,57 @@ class VisualiserMainWindow(QMainWindow) :
     def __setup_objects_other(self) :
 
         pass
+
+
+    def paintEvent(self, event) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::paintEvent"
+
+
+        print(nameMethod + " : Enter")
+
+        super().paintEvent(event)
+
+        # Send out a signal.
+
+        width  = self.width()
+        height = self.height()
+
+        self.signal_eventResize.emit(str(width), str(height))
+
+        print(nameMethod + " : Exit")
+
+
+    def resizeEvent(self, event) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::resizeEvent"
+
+
+        print(nameMethod + " : Enter")
+
+        super().resizeEvent(event)
+
+        # Send out a signal.
+
+        width  = self.width()
+        height = self.height()
+
+        self.signal_eventResize.emit(str(width), str(height))
+
+        print(nameMethod + " : Exit")
+
+
+    @Slot(str, str)
+    def slot_eventResize(self, width, height) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::slot_eventResize"
+
+
+        print(nameMethod + " : Enter")
+
+        print(nameMethod + " : (width, height) = (" + width + ", " + height + ")")
+
+        print(nameMethod + " : Exit")

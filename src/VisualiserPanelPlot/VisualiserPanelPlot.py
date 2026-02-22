@@ -196,11 +196,11 @@ class VisualiserPanelPlot(QFrame) :
 
         self.frame_buttons   = QFrame()
 
-        self.pushButton_dimensions = QPushButton("Dimensions")
+        self.pushButton_play       = QPushButton("Play")
         self.pushButton_screenshot = QPushButton("Screenshot")
         self.pushButton_exit       = QPushButton("Exit")
 
-        self.pushButton_dimensions.setFixedSize(QSize(100, 30))
+        self.pushButton_play.setFixedSize(QSize(100, 30))
         self.pushButton_screenshot.setFixedSize(100, 30)
         self.pushButton_exit.setFixedSize(QSize(100, 30))
 
@@ -372,7 +372,7 @@ class VisualiserPanelPlot(QFrame) :
 
         layout_buttons = QHBoxLayout(self.frame_buttons)
 
-        layout_buttons.addWidget(self.pushButton_dimensions)
+        layout_buttons.addWidget(self.pushButton_play)
         layout_buttons.addWidget(self.pushButton_screenshot)
         layout_buttons.addWidget(self.pushButton_exit)
 

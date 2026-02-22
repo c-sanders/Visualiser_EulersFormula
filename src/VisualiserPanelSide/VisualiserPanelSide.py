@@ -628,7 +628,7 @@ class VisualiserPanelSide(QFrame) :
 
 
     @Slot(str, str, str)
-    def __slot_svg_metadata_updated(self, base, azimuth, elevation):
+    def slot_svg_metadata_updated(self, base, azimuth, elevation):
 
         nameMethod = self.__class__.__name__ + \
                      "::__signal_svg_metadata_updated"
@@ -638,7 +638,11 @@ class VisualiserPanelSide(QFrame) :
 
         # This function is the slot that runs when the signal is received
 
-        print(nameMethod + " : base = " + base)
+        print(nameMethod + " : base      = " + base)
+        print(nameMethod + " : azimuth   = " + azimuth)
+        print(nameMethod + " : elevation = " + elevation)
+
+        self.label_base.setText(base)
 
         print(nameMethod + " : Exit")
 

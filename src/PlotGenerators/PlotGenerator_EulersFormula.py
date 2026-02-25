@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 class PlotGenerator_EulersFormula(QObject) :
 
     finished = Signal()
-    progress = Signal(int, int)
+    progress = Signal(int, int, str)
 
 
     def __init__(self, dirname) :
@@ -34,6 +34,46 @@ class PlotGenerator_EulersFormula(QObject) :
             dirname += "/"
 
         self.dirname = dirname
+
+        self.proceed_with_plots = True
+
+        print(nameMethod + " : Exit")
+
+
+    @Slot()
+    def stop(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::stop"
+
+
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : Enter")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+        print(nameMethod + " : }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+
+        self.proceed_with_plots = False
 
         print(nameMethod + " : Exit")
 
@@ -121,7 +161,7 @@ class PlotGenerator_EulersFormula(QObject) :
 
         azimuth_final = 360
 
-        while (azimuth <= 360) :
+        while (azimuth <= 360) and self.proceed_with_plots :
 
             # Optional: Adjust the viewing angle for better perspective
 
@@ -149,4 +189,6 @@ class PlotGenerator_EulersFormula(QObject) :
 
             azimuth = azimuth + 1
 
-            self.progress.emit(azimuth_final + 1, azimuth)
+            self.progress.emit(azimuth_final + 1, azimuth, filename)
+
+        self.finished.emit()

@@ -1,7 +1,3 @@
-import os
-
-from pathlib                                         import  Path
-
 from PySide6.QtCore                                  import (QSize,
                                                              QThread,
                                                              Signal,
@@ -9,14 +5,14 @@ from PySide6.QtCore                                  import (QSize,
 from PySide6.QtGui                                   import  QAction
 from PySide6.QtWidgets                               import (QMainWindow,
                                                              QFrame,
-                                                             QHBoxLayout,
-                                                             QFileDialog)
+                                                             QHBoxLayout)
 
 from VisualiserPanelSide.VisualiserPanelSide         import  VisualiserPanelSide
 from VisualiserPanelPlot.VisualiserPanelPlot         import  VisualiserPanelPlot
 from VisualiserAnimationLoop.VisualiserAnimationLoop import  VisualiserAnimationLoop
 
 from PlotGenerators.PlotGenerator_EulersFormula      import  PlotGenerator_EulersFormula
+from ProgressDialog.ProgressDialog                   import  ProgressDialog
 
 
 class VisualiserMainWindow(QMainWindow) :
@@ -243,9 +239,11 @@ class VisualiserMainWindow(QMainWindow) :
         self.exit_action = QAction("Exit", self)
         self.exit_action.setShortcut("Ctrl+Q")
 
+        self.generate_plots_action = QAction("Generate Plots", self)
 
-        self.generate_plots_0_action = QAction("Generate Plots - e Base", self)
-        self.generate_plots_1_action = QAction("Generate Plots - Varying Base", self)
+        self.panel_side_debug_off_action = QAction("VisualiserPanelSide - Toggle debug", self)
+        self.svg_object                  = QAction("SvgMetadataReader - Toggle debug", self)
+        self.thread_debug_off_action     = QAction("VisualiserAnimationLoop - Toggle debug", self)
 
         self.about_action = QAction("About", self)
 
@@ -258,6 +256,7 @@ class VisualiserMainWindow(QMainWindow) :
 
         file_menu  = menu_bar.addMenu("&File")
         tools_menu = menu_bar.addMenu("&Tools")
+        debug_menu = menu_bar.addMenu("&Debug")
         help_menu  = menu_bar.addMenu("&Help")
 
         # Add actions to File menu.
@@ -269,8 +268,13 @@ class VisualiserMainWindow(QMainWindow) :
 
         # Add actions to Tools menu.
 
-        tools_menu.addAction(self.generate_plots_0_action)
-        tools_menu.addAction(self.generate_plots_1_action)
+        tools_menu.addAction(self.generate_plots_action)
+
+        # Add actions to Debug menu.
+
+        debug_menu.addAction(self.panel_side_debug_off_action)
+        debug_menu.addAction(self.svg_object)
+        debug_menu.addAction(self.thread_debug_off_action)
 
         # Add actions to Help menu.
 
@@ -311,7 +315,7 @@ class VisualiserMainWindow(QMainWindow) :
 
             self.worker_animation.signal_svg_metadata_updated.connect(self.panel_side.slot_svg_metadata_updated)
 
-            self.generate_plots_1_action.triggered.connect(self.generate_plots_varying_base)
+            self.__connect_signals_actions()
 
         except Exception as e :
 
@@ -325,7 +329,35 @@ class VisualiserMainWindow(QMainWindow) :
             print(nameMethod + " : " + str(e))
 
 
+    def __connect_signals_actions(self) :
+
+        nameMethod = self.__class__.__name__ + \
+                     "::__connect_signals_actions"
+
+
+        print(nameMethod + " : Enter")
+
+        # VisualiserAnimationLoop - Toggle debug
+
+        self.thread_debug_off_action.triggered.connect(self.worker_animation.slot_debug_toggle)
+        # self.thread_debug_off_action.triggered.connect(self.slot_test_1)
+
+        # VisualiserAnimationLoop.svg_metadata_reader - Toggle debug
+
+        self.svg_object.triggered.connect(self.worker_animation.svg_metadata_reader.slot_debug_toggle)
+
+        self.generate_plots_action.triggered.connect(self.generate_plots_varying_base)
+
+        self.panel_side_debug_off_action.triggered.connect(self.panel_side.slot_debug_toggle)
+
+        print(nameMethod + " : Exit")
+
+
     def generate_plots_varying_base(self) :
+
+        # Create an instance of the appropriate panel.
+        #
+        #
 
         nameMethod = self.__class__.__name__ + \
                      "::generate_plots_varying_base"
@@ -333,99 +365,8 @@ class VisualiserMainWindow(QMainWindow) :
 
         print(nameMethod + " : Enter")
 
-        directory = QFileDialog.getExistingDirectory(
-            self,
-            "Select a folder to save plots into",
-            ""  # Starting directory (optional)
-        )
-
-        print(nameMethod + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(nameMethod + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(nameMethod + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(nameMethod + " : Directory name = " + directory)
-        print(nameMethod + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(nameMethod + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(nameMethod + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
-        path_directory = Path(directory)
-
-        if not path_directory.exists() :
-
-            raise Exception("Method " + nameMethod + " says : Directory does not exist = " + directory)
-
-        if not path_directory.is_dir() :
-
-            raise Exception("Method " + nameMethod + " says : Is not a directory = " + directory)
-
-        if not os.access(path_directory, os.W_OK) :
-
-            raise Exception("Method " + nameMethod + " says : Do not have write permission to the directory = " + directory)
-
-        # Generate the plots, saving them into the directory which was just selected.from
-
-        # Put this code into a separate thread.
-        #
-        # Use a progress bar to inform the user.
-
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : About to create a new thread")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-        self.thread_plot_generator = QThread()
-        self.worker_plot_generator = PlotGenerator_EulersFormula(directory)
-
-        progress = QProgressBar()
-        progress.setRange(0, 360)  # min, max
-        progress.setValue(0)
-        progress.show()
-        progress.display()
-
-        self.thread_plot_generator.started.connect(self.worker_plot_generator.run)
-        self.worker_plot_generator.progress.connect(self.update_progress)
-        self.worker_plot_generator.finished.connect(self.thread_plot_generator.quit)
-        self.worker_plot_generator.finished.connect(self.worker_plot_generator.deleteLater)
-        self.thread_plot_generator.finished.connect(self.thread_plot_generator.deleteLater)
-
-        # self.worker_animation.moveToThread(self.thread_animation)
-        # self.thread_animation.start()
-        # print(nameMethod + " : Have created a worker thread")
-
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : About to move object to thread")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-        self.worker_plot_generator.moveToThread(self.thread_plot_generator)
-
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : About to start the new thread")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-        self.thread_plot_generator.start()
-
-        print(nameMethod + " : //////////////////////////////////////////////////")
-        print(nameMethod + " : //////////////////////////////////////////////////")
-        print(nameMethod + " : //////////////////////////////////////////////////")
-        print(nameMethod + " : Should have started the new thread")
-        print(nameMethod + " : //////////////////////////////////////////////////")
-        print(nameMethod + " : //////////////////////////////////////////////////")
-        print(nameMethod + " : //////////////////////////////////////////////////")
-
-        # plot_generator_EulersFormula = PlotGenerator_EulersFormula(directory)
-
-        # plot_generator_EulersFormula.generate_plots()
-
+        panel_generate_plots = ProgressDialog(self)
+        panel_generate_plots.show()
 
         print(nameMethod + " : Exit")
 
@@ -585,15 +526,26 @@ class VisualiserMainWindow(QMainWindow) :
 
         print(nameMethod + " : Exit")
 
-    @Slot(int)
-    def update_progress(self, progress_final, progress_value) :
+
+    @Slot()
+    def slot_test_1(self):
 
         nameMethod = self.__class__.__name__ + \
-                     "::slot_eventResize"
+                     "::slot_test_1"
 
 
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(nameMethod + " : Enter")
-
-        print(nameMethod + " : Progress = " + str(progress_value) + "/" + str(progress_final))
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
         print(nameMethod + " : Exit")

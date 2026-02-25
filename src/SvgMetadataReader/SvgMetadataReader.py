@@ -1,6 +1,9 @@
 # import sys
 import re
-from   PySide6.QtCore    import QFile, QIODevice, QXmlStreamReader
+from   PySide6.QtCore    import (QFile,
+                                 QIODevice,
+                                 QXmlStreamReader,
+                                 Slot)
 # from   PySide6.QtWidgets import QApplication, QMessageBox
 
 
@@ -51,6 +54,8 @@ class SvgMetadataReader() :
         self.azimuth      = None
         self.elevation    = None
 
+        self.debug        = False
+
 
     def set_filename(self, filename) :
 
@@ -74,7 +79,9 @@ class SvgMetadataReader() :
         nameMethod = "SvgMetadataReader::get_parameters_from_file"
 
 
-        print(nameMethod + " : Enter")
+        if self.debug :
+
+            print(nameMethod + " : Enter")
 
         try :
 
@@ -104,7 +111,9 @@ class SvgMetadataReader() :
             print("Caught an exception : " + str(e))
 
 
-        print(nameMethod + " : Exit")
+        if self.debug :
+
+            print(nameMethod + " : Exit")
 
         return {"base"      : self.base,
                 "azimuth"   : self.azimuth,
@@ -116,7 +125,9 @@ class SvgMetadataReader() :
         nameMethod = "SvgMetadataReader::__open_file"
 
 
-        print(nameMethod + " : Enter")
+        if self.debug :
+
+            print(nameMethod + " : Enter")
 
         if not self.file_handle.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text) :
 
@@ -126,7 +137,9 @@ class SvgMetadataReader() :
 
             raise Exception("Failed to open file for reading : " + self.filename)
 
-        print(nameMethod + " : Exit")
+        if self.debug:
+
+            print(nameMethod + " : Exit")
 
 
     def __create_and_open_sax_reader(self) :
@@ -137,13 +150,17 @@ class SvgMetadataReader() :
         :rtype: NA
         """
 
-        nameMethod = "SvgMetadataReader::create_and_open_sax_reader"
+        nameMethod = "SvgMetadataReader::__create_and_open_sax_reader"
 
-        print(nameMethod + " : Enter")
+        if self.debug :
+
+            print(nameMethod + " : Enter")
 
         self.reader = QXmlStreamReader(self.file_handle)
 
-        print(nameMethod + " : Exit")
+        if self.debug :
+
+            print(nameMethod + " : Exit")
 
 
     def __process_all_tokens(self) :
@@ -158,7 +175,9 @@ class SvgMetadataReader() :
         nameMethod = "SvgMetadataReader::__process_all_tokens"
 
 
-        print(nameMethod + " : Enter")
+        if self.debug :
+
+            print(nameMethod + " : Enter")
 
         while (not self.reader.atEnd()) and \
               (not self.reader.hasError()) :
@@ -169,11 +188,15 @@ class SvgMetadataReader() :
 
         if self.reader.hasError() :
 
-            print(nameMethod + " : Exit prematurely due to exception")
+            if self.debug:
+
+                print(nameMethod + " : Exit prematurely due to exception")
 
             raise Exception("Error parsing XML : " + self.reader.errorString())
 
-        print(nameMethod + " : Exit")
+        if self.debug :
+
+            print(nameMethod + " : Exit")
 
 
     def __read_and_process_next_token(self) :
@@ -236,15 +259,25 @@ class SvgMetadataReader() :
 
     def __process_li_element(self) :
 
-        print("Namespace  = " + self.ns_uri)
-        print("Local name = " + self.local_name)
-        print("Encountered XML element : li")
+        nameMethod  = self.__class__.__name__ + \
+                      "::__process_li_element"
+
+
+        if self.debug :
+
+            print(nameMethod + " : Enter")
+
+            print("Namespace  = " + self.ns_uri)
+            print("Local name = " + self.local_name)
+            print("Encountered XML element : li")
 
         # Get the value of the element.
 
         value_element = self.reader.readElementText()
 
-        print("    Element value = " + value_element)
+        if self.debug :
+
+            print(nameMethod + " :   Element value = " + value_element)
 
         if self.__process_element_base(value_element) :
 
@@ -257,6 +290,10 @@ class SvgMetadataReader() :
         if self.__process_element_elevation(value_element) :
 
             return
+
+        if self.debug :
+
+            print(nameMethod + " : Exit")
 
 
     def __process_element_base(self, value_element) :
@@ -275,7 +312,9 @@ class SvgMetadataReader() :
         returnValue = False
 
 
-        print(nameMethod + " : Enter")
+        if self.debug :
+
+            print(nameMethod + " : Enter")
 
         # Check if the value of the element contains the value for : base
 
@@ -291,10 +330,13 @@ class SvgMetadataReader() :
 
             self.base = result_search.group()
 
-            print(nameMethod + " : Base = " + self.base)
+            if self.debug:
 
+                print(nameMethod + " : Base = " + self.base)
 
-        print(nameMethod + " : Exit")
+        if self.debug:
+
+            print(nameMethod + " : Exit")
 
         return returnValue
 
@@ -305,7 +347,9 @@ class SvgMetadataReader() :
         returnValue = False
 
 
-        print(nameMethod + " : Enter")
+        if self.debug:
+
+            print(nameMethod + " : Enter")
 
         # Check if the value of the element contains the value for : azimuth
 
@@ -320,10 +364,13 @@ class SvgMetadataReader() :
             result_search = re.search(r"\d{1,3}", value_element)
             self.azimuth = result_search.group()
 
-            print("Azimuth = " + self.azimuth)
+            if self.debug:
 
+                print("Azimuth = " + self.azimuth)
 
-        print(nameMethod + " : Exit")
+        if self.debug:
+
+            print(nameMethod + " : Exit")
 
         return returnValue
 
@@ -334,7 +381,9 @@ class SvgMetadataReader() :
         returnValue = False
 
 
-        print(nameMethod + " : Enter")
+        if self.debug :
+
+            print(nameMethod + " : Enter")
 
         # Check if the value of the element contains the value for : elevation
 
@@ -349,19 +398,25 @@ class SvgMetadataReader() :
             result_search = re.search(r"\d{1,3}", value_element)
             self.elevation = result_search.group()
 
-            print("Elevation = " + self.elevation)
+            if self.debug :
+
+                print("Elevation = " + self.elevation)
 
 
-        print(nameMethod + " : Exit")
+        if self.debug :
+
+            print(nameMethod + " : Exit")
 
         return returnValue
 
 
     def display_plot_parameters(self) :
 
-        print("Base                   = " + str(self.base))
-        print("View angle : azimuth   = " + str(self.azimuth))
-        print("View angle : elevation = " + str(self.elevation))
+        if self.debug :
+
+            print("Base                   = " + str(self.base))
+            print("View angle : azimuth   = " + str(self.azimuth))
+            print("View angle : elevation = " + str(self.elevation))
 
 
     def print_plot_parameters(self) :
@@ -383,3 +438,42 @@ class SvgMetadataReader() :
 
         return self.elevation
 
+
+    @Slot()
+    def slot_debug_toggle(self):
+
+        nameMethod = self.__class__.__name__ + \
+                     "::slot_debug_toggle"
+
+
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : Enter")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+
+        if not self.debug :
+
+            self.debug = True
+
+        else :
+
+            self.debug = False
+
+        print(nameMethod + " : self.debug = " + str(self.debug))
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+
+        print(nameMethod + " : Exit")

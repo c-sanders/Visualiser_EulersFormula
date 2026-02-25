@@ -65,6 +65,8 @@ class VisualiserPanelSide(QFrame) :
         self.__create_widgets()
         self.__create_objects()
 
+        self.debug = False
+
         print(nameMethod + " : Exit")
 
 
@@ -634,17 +636,21 @@ class VisualiserPanelSide(QFrame) :
                      "::__signal_svg_metadata_updated"
 
 
-        print(nameMethod + " : Enter")
+        if self.debug :
 
-        # This function is the slot that runs when the signal is received
+            print(nameMethod + " : Enter")
 
-        print(nameMethod + " : base      = " + base)
-        print(nameMethod + " : azimuth   = " + azimuth)
-        print(nameMethod + " : elevation = " + elevation)
+            # This function is the slot that runs when the signal is received
+
+            print(nameMethod + " : base      = " + base)
+            print(nameMethod + " : azimuth   = " + azimuth)
+            print(nameMethod + " : elevation = " + elevation)
 
         self.label_base.setText(base)
 
-        print(nameMethod + " : Exit")
+        if self.debug:
+
+            print(nameMethod + " : Exit")
 
 
     @Slot(str, str)
@@ -660,6 +666,38 @@ class VisualiserPanelSide(QFrame) :
 
         self.label_value_windowDimensions_width.setText(width_window_main)
         self.label_value_windowDimensions_height.setText(height_window_main)
+
+        print(nameMethod + " : Exit")
+
+
+    @Slot()
+    def slot_debug_toggle(self):
+
+        nameMethod = self.__class__.__name__ + \
+                     "::slot_debug_toggle"
+
+
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : Enter")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(nameMethod + " : &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+
+        if not self.debug :
+
+            self.debug = True
+
+        else :
+
+            self.debug = False
 
         print(nameMethod + " : Exit")
 

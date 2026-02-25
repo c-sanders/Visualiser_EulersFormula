@@ -183,6 +183,9 @@ class VisualiserPanelPlot(QFrame) :
 
     def __setup_settings(self) :
 
+        self.debug         = True
+        self.debug_mathjax = False
+
         self.filename_plot                 = "/home/craig/source_code/python/visualiser_8_Feb_2026/svg/Eulers_formula_(45,8).svg"
         self.plot_title_use_png_or_mathjax = "mathjax"
 
@@ -300,17 +303,21 @@ class VisualiserPanelPlot(QFrame) :
         layout_frame_plotTitle = QVBoxLayout(frame_plotTitle)
 
 
-        print(nameMethod + " : Enter")
+        if self.debug :
+
+            print(nameMethod + " : Enter")
 
         with open("/home/craig/source_code/python/visualiser_8_Feb_2026/Visualiser_EulersFormula/src/html/mathjax.html", "r") as file_handle :
 
             html_mathjax = file_handle.read()
 
-        print(nameMethod + " : ##################################################")
-        print(nameMethod + " : ##################################################")
-        print(nameMethod + " : html_mathjax = " + html_mathjax)
-        print(nameMethod + " : ##################################################")
-        print(nameMethod + " : ##################################################")
+        if self.debug_mathjax :
+
+            print(nameMethod + " : ##################################################")
+            print(nameMethod + " : ##################################################")
+            print(nameMethod + " : html_mathjax = " + html_mathjax)
+            print(nameMethod + " : ##################################################")
+            print(nameMethod + " : ##################################################")
 
         # self.plot_title.load(local_url)
         # self.plot_title.setUrl(QUrl.fromLocalFile("/home/craig/source_code/python/Visualiser_EulersFormula/plot_title_basic.html"))
@@ -340,24 +347,45 @@ class VisualiserPanelPlot(QFrame) :
 
         layout_frame_plotTitle.addWidget(self.plot_title)
 
+        print(nameMethod + " : Number of items registered with self.layout() = " + str(self.layout().count()))
+        print(nameMethod + " : About to add the following to the self.layout() : frame_plotTitle")
+
         self.layout().addWidget(frame_plotTitle)
 
-        print(nameMethod + " : Exit")
+        print(nameMethod + " : Number of items registered with self.layout() = " + str(self.layout().count()))
+
+        if self.debug :
+
+            print(nameMethod + " : Exit")
 
 
     def __setup_panel_plotView(self) :
 
         nameMethod = "Visualiser_Panel_Plot::setup_panel_plotView"
 
-
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(nameMethod + " : Enter")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         svg_widget_b = VisualiserSvgWidget("/home/craig/source_code/python/visualiser_8_Feb_2026/svg/Eulers_formula_(45,8).svg")
         svg_widget_b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # self.slot_update_panel_plotView(self.filename_plot)
 
+        print(nameMethod + " : Number of items registered with self.layout() = " + str(self.layout().count()))
+        print(nameMethod + " : About to add the following to the self.layout() : svg_widget_b")
+
         self.layout().addWidget(svg_widget_b)
+
+        print(nameMethod + " : Number of items registered with self.layout() = " + str(self.layout().count()))
 
         print(nameMethod + " : Exit")
 
@@ -376,8 +404,13 @@ class VisualiserPanelPlot(QFrame) :
         layout_buttons.addWidget(self.pushButton_screenshot)
         layout_buttons.addWidget(self.pushButton_exit)
 
+        print(nameMethod + " : Number of items registered with self.layout() = " + str(self.layout().count()))
+        print(nameMethod + " : About to add the following to the self.layout() : addStretch")
         self.layout().addStretch(1)
+        print(nameMethod + " : Number of items registered with self.layout() = " + str(self.layout().count()))
+        print(nameMethod + " : About to add the following to the self.layout() : frame_buttons")
         self.layout().addWidget(self.frame_buttons)
+        print(nameMethod + " : Number of items registered with self.layout() = " + str(self.layout().count()))
 
         print(nameMethod + " : Exit")
 
